@@ -67,6 +67,8 @@ printf("create_jmptbl_ccount[%d]\n", create_jmptbl_ccount);
 
 <main_process>"goto"	return(__STATE_GOTO);
 
+<main_process>"print"	return(__FUNC_PRINT);
+
 <main_process>[_a-zA-Z][_0-9a-zA-Z]* {
 	strcpy(yylval.identifier, yytext);
 	return(__IDENTIFIER);

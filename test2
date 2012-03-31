@@ -13,4 +13,10 @@ L2:
 i = i - 1;
 if i > 0 then goto L2; ;
 
+i = 0;
+L3:
+i = i + 1;
+if i < 5 then goto L3; else goto END;
+
+END:
 

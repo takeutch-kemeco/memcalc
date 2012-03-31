@@ -30,6 +30,7 @@ void jump_run(long fpos)
 	struct MemTag* memtag;
 }
 
+%token __FUNC_PRINT
 %token __STATE_IF __STATE_THEN __STATE_ELSE
 %token __STATE_GOTO
 %token __CONST_FLOAT
@@ -71,30 +72,32 @@ translation_unit
 declaration
 	: __DECL_END
 
-	| declarator __DECL_END {
-		double* tmp = (double*)($1->address);
-		printf("%g\n", *tmp);
-	}
+	| declarator __DECL_END
 
 	| selection
 
-	| expression __DECL_END {
-		printf("%g\n", $1);
-	}
+	| func_print
+
+	| expression __DECL_END
 
 	| declarator __OPE_SUBST initializer __DECL_END {
 		double* tmp = (double*)($1->address);
 		*tmp = $3;
-
-		printf("%g\n", *tmp);
 	}
 
 	| jump {
 		jump_run($1);
 	}
 
-	| error __DECL_END {yyerrok;}
+	| error __DECL_END {
+		yyerrok;
+	}
 	;
+
+func_print
+	: __FUNC_PRINT expression __DECL_END {
+		printf("%f\n", $2);
+	}
 
 declarator
 	: __IDENTIFIER {
