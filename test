@@ -1,0 +1,11 @@
+start:
+a = 1 + 2;
+aiueo:
+b = 3 - 4;
+kakikukeko:
+   sasisuse: so:
+c = 5 * 6;
+tatitu: teto:
+d = d + (a + b) * c;
+goto start;
+

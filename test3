@@ -1,0 +1,6 @@
+start:
+a = a + 1;
+
+goto start;
+end:
+

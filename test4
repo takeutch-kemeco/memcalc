@@ -1,0 +1,11 @@
+goto MAIN;
+
+AAA:
+a = a + 1;
+goto MAIN;
+
+MAIN:
+if a == 3 then goto END; else goto AAA;
+
+END:
+

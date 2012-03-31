@@ -1,0 +1,13 @@
+goto MAIN;
+
+F:
+	a = a + 1;
+	b = b + a;
+	
+	goto _F;
+
+MAIN:
+	a = 0; b = 0; _F: if a == 10 then goto END; else goto F; END:
+
+	b;
+
