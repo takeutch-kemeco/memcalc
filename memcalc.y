@@ -12,6 +12,7 @@ void yyerror(const char *s)
 }
 
 extern FILE* yyin;
+extern FILE* yyout;
 
 void jump_run(long fpos)
 {
@@ -273,6 +274,7 @@ int main(int argc, char** argv)
 	}
 
 	yyin = fopen(argv[1], "rt");
+	yyout = fopen("/dev/null", "w");
 
 
 	mem_init();
