@@ -48,6 +48,12 @@ printf("create_jmptbl_ccount[%d]\n", create_jmptbl_ccount);
 <main_process>"~"	return(__OPE_NOT);
 
 <main_process>"=="	return(__OPE_COMPARISON);
+<main_process>"!="	return(__OPE_NOT_COMPARISON);
+<main_process>"<"	return(__OPE_ISSMALL);
+<main_process>"<="	return(__OPE_ISSMALL_COMP);
+<main_process>">"	return(__OPE_ISLARGE);
+<main_process>">="	return(__OPE_ISLARGE_COMP);
+
 <main_process>"="	return(__OPE_SUBST);
 
 <main_process>"("	return(__LB);

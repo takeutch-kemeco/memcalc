@@ -1,5 +1,16 @@
-a = 0;
-start:
-a = a + 1;
-if a == 1 then goto start;
+i = 0;
+L0:
+i = i + 1;
+if i != 5 then goto L0; ;
+
+i = 0;
+L1:
+i = i + 1;
+if i < 5 then goto L1; ;
+
+i = 5;
+L2:
+i = i - 1;
+if i > 0 then goto L2; ;
+
 

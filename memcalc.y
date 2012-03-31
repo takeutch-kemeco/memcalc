@@ -37,13 +37,18 @@ void jump_run(long fpos)
 %token __OPE_MUL __OPE_DIV __OPE_MOD
 %token __OPE_LSHIFT __OPE_RSHIFT
 %token __OPE_OR __OPE_AND __OPE_XOR __OPE_NOT
-%token __OPE_COMPARISON
+%token __OPE_COMPARISON __OPE_NOT_COMPARISON
+%token __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
 %token __OPE_SUBST
 
 %token __LB __RB
 %token __DECL_END
 
 %token __IDENTIFIER
+
+%left __OPE_SUBST
+%left __OPE_COMPARISON __OPE_NOT_COMPARISON
+%left __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
 
 %left __OPE_LSHIFT __OPE_RSHIFT
 %left __OPE_OR __OPE_AND __OPE_XOR __OPE_NOT
@@ -183,6 +188,41 @@ expression
 		else
 			$$ = 0;
 	}
+
+	| expression __OPE_NOT_COMPARISON expression {
+		if ($1 != $3)
+			$$ = 1;
+		else
+			$$ = 0;
+	}
+
+	| expression __OPE_ISSMALL expression {
+		if ($1 < $3)
+			$$ = 1;
+		else
+			$$ = 0;
+	}
+
+	| expression __OPE_ISSMALL_COMP expression {
+		if ($1 <= $3)
+			$$ = 1;
+		else
+			$$ = 0;
+	}
+
+	| expression __OPE_ISLARGE expression {
+		if ($1 > $3)
+			$$ = 1;
+		else
+			$$ = 0;
+	}
+
+	| expression __OPE_ISLARGE_COMP expression {
+		if ($1 >= $3)
+			$$ = 1;
+		else
+			$$ = 0;
+	}
 	;
 
 read_variable
@@ -202,24 +242,21 @@ read_variable
 	;
 
 selection
-	: __STATE_IF expression __STATE_THEN jump __STATE_ELSE jump {
-printf("IF THEN ELSE\n");
+	: __STATE_IF expression __STATE_THEN jump {
+		if ($2 != 0)
+			jump_run($4);
+	}
+
+	| __STATE_IF expression __STATE_THEN jump __STATE_ELSE jump {
 		if ($2 != 0)
 			jump_run($4);
 		else
 			jump_run($6);
 	}
-
-	| __STATE_IF expression __STATE_THEN jump {
-printf("IF THEN\n");
-		if ($2 != 0)
-			jump_run($4);
-	}
 	;
 
 jump
 	: __STATE_GOTO __IDENTIFIER __DECL_END {
-printf("GOTO\n");
 		$$ = jmptbl_seek($2);
 	}
 
