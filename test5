@@ -9,5 +9,9 @@ F:
 MAIN:
 	a = 0; b = 0; _F: if a == 10 then goto END; else goto F; END:
 
+	goto END2;
+
 	b;
 
+END2:
+	b + 123;

@@ -35,6 +35,7 @@ void jump_run(long fpos)
 %token __CONST_FLOAT
 %token __OPE_PLUS __OPE_MINUS
 %token __OPE_MUL __OPE_DIV
+%token __OPE_OR __OPE_AND __OPE_XOR __OPE_NOT
 %token __OPE_COMPARISON
 %token __OPE_SUBST
 
@@ -43,6 +44,7 @@ void jump_run(long fpos)
 
 %token __IDENTIFIER
 
+%left __OPE_OR __OPE_AND __OPE_XOR __OPE_NOT
 %left __OPE_ADD __OPE_SUB
 %left __OPE_MUL __OPE_DIV
 %left __OPE_PLUS __OPE_MINUS
@@ -131,6 +133,22 @@ expression
 
 	| expression __OPE_DIV expression {
 		$$ = $1 / $3;
+	}
+
+	| expression __OPE_OR expression {
+		$$ = ((u_long)$1) | ((u_long)$3);
+	}
+
+	| expression __OPE_AND expression {
+		$$ = ((u_long)$1) & ((u_long)$3);
+	}
+
+	| expression __OPE_XOR expression {
+		$$ = ((u_long)$1) ^ ((u_long)$3);
+	}
+
+	| __OPE_NOT expression {
+		$$ = ~((u_long)$2);
 	}
 
 	| __OPE_ADD expression %prec __OPE_PLUS {
