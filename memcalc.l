@@ -59,6 +59,10 @@ printf("create_jmptbl_ccount[%d]\n", create_jmptbl_ccount);
 <main_process>"("	return(__LB);
 <main_process>")"	return(__RB);
 
+<main_process>"{"	return(__BLOCK_BEGIN);
+<main_process>"}"	return(__BLOCK_END);
+
+<main_process>","	return(__CAMMA);
 <main_process>";"	return(__DECL_END);
 
 <main_process>"if"	return(__STATE_IF);
@@ -68,6 +72,7 @@ printf("create_jmptbl_ccount[%d]\n", create_jmptbl_ccount);
 <main_process>"goto"	return(__STATE_GOTO);
 
 <main_process>"print"	return(__FUNC_PRINT);
+<main_process>"putpixel"	return(__FUNC_PUTPIXEL);
 
 <main_process>[_a-zA-Z][_0-9a-zA-Z]* {
 	strcpy(yylval.identifier, yytext);

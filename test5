@@ -1,17 +1,22 @@
-goto MAIN;
+MAIN:
+	a = 1;
+
+	i = 0;
+
+	LOOP_TOP:
+	goto F;
+	_F:
+	i = i + 1;
+	print(i);
+	if i < 10 then goto LOOP_TOP;
+
+
+	print(123);
+	goto END;
 
 F:
-	a = a + 1;
-	b = b + a;
-	
+	a = a * 2;
+	print(a);
 	goto _F;
 
-MAIN:
-	a = 0; b = 0; _F: if a == 10 then goto END; else goto F; END:
-
-	goto END2;
-
-	b;
-
-END2:
-	b + 123;
+END:

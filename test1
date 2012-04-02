@@ -1,9 +1,26 @@
 a = 11;
+print(a);
+
 b = 2;
-a + b;
-a - b;
-a * b;
-a / b;
-a % b;
-a << b;
-a >> b;
+print(b);
+
+c = a + b;
+print(c);
+
+c = a - b;
+print(c);
+
+c = a * b;
+print(c);
+
+c = a / b;
+print(c);
+
+c = a % b;
+print(c);
+
+c = a << b;
+print(c);
+
+c = a >> b;
+print(c);

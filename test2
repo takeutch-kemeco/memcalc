@@ -1,22 +1,8 @@
 i = 0;
-L0:
-i = i + 1;
-if i != 5 then goto L0; ;
 
-i = 0;
 L1:
+print(i);
 i = i + 1;
-if i < 5 then goto L1; ;
+if i < 10 then goto L1; else i = 234;
 
-i = 5;
-L2:
-i = i - 1;
-if i > 0 then goto L2; ;
-
-i = 0;
-L3:
-i = i + 1;
-if i < 5 then goto L3; else goto END;
-
-END:
-
+print(i);
