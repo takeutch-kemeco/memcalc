@@ -64,7 +64,17 @@ long create_jmptbl_ccount;
         /* c++ スタイルのコメント */
 }
 
+<main_process>[0][0-9]+[.]?[0-9]* {
+        printf("\n%s\n構文エラー : 数値の先頭に不適切な 0 があります\n\n", yytext);
+        exit(1);
+}
+
 <main_process>[0-9]+[.]?[0-9]* {
+        yylval.val = atof(yytext);
+        return(__CONST_FLOAT);
+}
+
+<main_process>[0][.][0-9]* {
         yylval.val = atof(yytext);
         return(__CONST_FLOAT);
 }
