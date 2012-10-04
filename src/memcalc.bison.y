@@ -398,13 +398,23 @@ static init_func_all(void)
 int main(int argc, char** argv)
 {
         if (argc == 1) {
-                printf("program [file] \n");
+                print_usage();
                 exit(1);
         }
 
         yyin = fopen(argv[1], "rt");
-        yyout = fopen("/dev/null", "w");
+        if (yyin == NULL) {
+                print_file_open_err(argv[1]);
+                print_usage();
+                exit(1);
+        }
 
+        yyout = fopen("/dev/null", "w");
+        if (yyout == NULL) {
+                print_file_open_err("/dev/null");
+                print_usage();
+                exit(1);
+        }
 
         mem_init();
         jmptbl_init();
