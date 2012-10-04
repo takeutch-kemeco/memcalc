@@ -77,7 +77,5 @@ void jmptbl_add(char* name, long fpos)
                 p->fpos = fpos;
 
                 jtlst_head++;
-
-                printf("jmptbl [%s][%p] = [%d]\n", name, &(p->fpos), p->fpos);
         }
 }
