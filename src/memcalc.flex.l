@@ -30,6 +30,7 @@ long create_jmptbl_ccount;
 
 %x create_jmptbl
 %x main_process
+%x main_process_comment
 
 %%
 
@@ -38,12 +39,29 @@ long create_jmptbl_ccount;
         tmp[yyleng - 1] = '\0';
 
         create_jmptbl_ccount += yyleng;
-printf("create_jmptbl_ccount[%d]\n", create_jmptbl_ccount);
         jmptbl_add(tmp, create_jmptbl_ccount);
 }
 
 <create_jmptbl>.|[\n] {
         create_jmptbl_ccount += yyleng;
+}
+
+<main_process>[/][*] {
+        /* c スタイルのコメントの開始点 */
+        BEGIN(main_process_comment);
+}
+
+<main_process_comment>[*][/] {
+        /* c スタイルのコメントの終了点 */
+        BEGIN(main_process);
+}
+
+<main_process_comment>. {
+        /* c スタイルのコメントの本文 */
+}
+
+<main_process>"//".*[\n] {
+        /* c++ スタイルのコメント */
 }
 
 <main_process>[0-9]+[.]?[0-9]* {
