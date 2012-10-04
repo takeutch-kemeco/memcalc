@@ -374,7 +374,7 @@ jump
                 if (skip_flag == false) {
                         u_long fpos = jmptbl_seek($2);
                         if (fpos == -1) {
-                                printf("error: 存在しないラベルを指定しました\n");
+                                printf("\n%s\n構文エラー : 存在しないラベルをジャンプ先に指定しました\n\n", $2);
                                 exit(1);
                         }
 
