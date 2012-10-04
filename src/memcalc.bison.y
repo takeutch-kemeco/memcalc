@@ -102,8 +102,7 @@ translation_unit
 declaration
         : declaration_unit
         | declaration_unit declaration
-        | __BLOCK_BEGIN declaration_unit __BLOCK_END
-        | __BLOCK_BEGIN declaration_unit declaration __BLOCK_END
+        | __BLOCK_BEGIN declaration __BLOCK_END
         ;
 
 declaration_unit
