@@ -128,6 +128,8 @@ long create_jmptbl_ccount;
 <main_process>[_a-zA-Z][_0-9a-zA-Z]*[:] {
 }
 
+<main_process><<EOF>>   return(__EOF);
+
 %%
 
 start_create_jmptbl() {BEGIN(create_jmptbl);}

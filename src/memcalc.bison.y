@@ -74,6 +74,7 @@ bool skip_flag = false;
 %token __BLOCK_BEGIN __BLOCK_END
 %token __CAMMA
 %token __DECL_END
+%token __EOF
 
 %token __IDENTIFIER
 
@@ -125,6 +126,10 @@ declaration_unit
 
         | error __DECL_END {
                 yyerrok;
+        }
+
+        | __EOF {
+                YYACCEPT;
         }
         ;
 
