@@ -69,13 +69,13 @@ static void* seek_poolhead(void)
         if (reflist_head == 0)
                 return &pool[0];
 
-        struct REF* p = &reflist[reflist_head - 1];
+        struct REF* p = reflist + reflist_head - 1;
         return p->tag.address + p->tag.bytesize;
 }
 
 static void push_var(const char* name, const size_t bytesize)
 {
-        struct REF* p = &reflist[reflist_head];
+        struct REF* p = reflist + reflist_head;
 
         clear_ref(p);
 
@@ -102,15 +102,15 @@ static struct REF* search_ref(const char* name)
 {
         const size_t name_len = strlen(name);
 
-        int i;
-        for (i = reflist_head - 1; i >= 0; i--) {
-                struct REF* p = &reflist[i];
+        struct REF* p = reflist + reflist_head - 1;
 
-                if (strlen(p->name) == name_len) {
-                        if (strcmp(p->name, name) == 0) {
+        int i;
+        for (i = 0; i < reflist_head; i++) {
+                if (strlen(p->name) == name_len)
+                        if (strcmp(p->name, name) == 0)
                                 return p;
-                        }
-                }
+
+                p--;
         }
 
         return NULL;
@@ -130,7 +130,11 @@ struct MemTag* read_num_var_memtag(const char* name, const size_t index)
         struct MemTag* p = get_ptr_var(name);
 
         if (p == NULL) {
-                push_var(name, sizeof(double) * index);
+                if (index == 0)
+                        push_var(name, sizeof(double));
+                else
+                        push_var(name, sizeof(double) * index);
+
                 p = get_ptr_var(name);
         }
 
