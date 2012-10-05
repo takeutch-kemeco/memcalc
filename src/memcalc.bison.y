@@ -27,6 +27,8 @@
 #include "jmptbl.h"
 #include "func_putpixel.h"
 
+#define YYMAXDEPTH 0x10000000
+
 void yyerror(const char *s)
 {
         printf("%s\n",s);

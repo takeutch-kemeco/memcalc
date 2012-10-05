@@ -23,52 +23,45 @@
 #include <sys/types.h>
 #include "mem.h"
 
-#define POOL_MAX 0x10000
+#define POOL_MAX 0x1000000
 static u_char* pool;
 
-#define REF_NAME_MAX 0x100
 struct REF {
-        char name[REF_NAME_MAX];
+        char* name;
         struct MemTag tag;
 };
 
-static struct REF** reflist;
+static struct REF* reflist;
 static u_int reflist_head = 0;
 
 void mem_init(void)
 {
         pool = malloc(sizeof(*pool) * POOL_MAX);
-        memset(pool, 0, POOL_MAX);
-
-        reflist = malloc(sizeof(*reflist) * POOL_MAX);
-        memset(reflist, 0, POOL_MAX);
+        reflist = calloc(sizeof(*reflist), POOL_MAX);   /* 0 で初期化するため */
 
         reflist_head = 0;
+}
+
+static void* clear_ref(struct REF* a)
+{
+        if (a->name != NULL) {
+                free(a->name);
+                a->name = NULL;
+        }
+
+        a->tag.address = 0;
+        a->tag.bytesize = 0;
+        a->tag.index = 0;
 }
 
 void mem_close(void)
 {
         int i;
-        for (i = 0; i < POOL_MAX; i++) {
-                if (reflist[i] != NULL)
-                        free(reflist[i]);
-
-                reflist[i] = NULL;
-        }
+        for (i = 0; i < POOL_MAX; i++)
+                clear_ref(reflist + i);
 
         free(reflist);
         free(pool);
-}
-
-static struct REF* ref_new(void)
-{
-        struct REF* a = malloc(sizeof(*a));
-        a->name[0] = '\0';
-        a->tag.address = 0;
-        a->tag.bytesize = 0;
-        a->tag.index = 0;
-
-        return a;
 }
 
 static void* seek_poolhead(void)
@@ -76,17 +69,19 @@ static void* seek_poolhead(void)
         if (reflist_head == 0)
                 return &pool[0];
 
-        struct REF* prev = reflist[reflist_head - 1];
-        return prev->tag.address + prev->tag.bytesize;
+        struct REF* p = &reflist[reflist_head - 1];
+        return p->tag.address + p->tag.bytesize;
 }
 
 static void push_var(const char* name, const size_t bytesize)
 {
-        if (reflist[reflist_head] == NULL)
-                reflist[reflist_head] = ref_new();
+        struct REF* p = &reflist[reflist_head];
 
-        struct REF* p = reflist[reflist_head];
-        strncpy(p->name, name, REF_NAME_MAX);
+        clear_ref(p);
+
+        p->name = malloc(strlen(name) + 1);
+        strcpy(p->name, name);
+
         p->tag.address = seek_poolhead();
         p->tag.bytesize = bytesize;
 
@@ -96,8 +91,8 @@ static void push_var(const char* name, const size_t bytesize)
 static void pop_var(void)
 {
         if (reflist_head == 0) {
-                printf("error pop_var():\n");
-                exit(1);
+                printf("system error: pop_var()\n");
+                return;
         }
 
         reflist_head--;
@@ -109,7 +104,7 @@ static struct REF* search_ref(const char* name)
 
         int i;
         for (i = reflist_head - 1; i >= 0; i--) {
-                struct REF* p = reflist[i];
+                struct REF* p = &reflist[i];
 
                 if (strlen(p->name) == name_len) {
                         if (strcmp(p->name, name) == 0) {

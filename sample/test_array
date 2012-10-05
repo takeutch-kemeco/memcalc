@@ -1,0 +1,18 @@
+a[1000000];	// 8MB の配列を確保 (double型 8byte * 1M)
+
+i = 0;
+L1:
+if i < 1000000 then {
+	a[i] = i;
+	i = i + 10;
+	goto L1;
+}
+
+i = 0;
+L2:
+if i < 1000000 then {
+	print(a[i]);
+	i = i + 10;
+	goto L2;
+}
+
