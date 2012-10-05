@@ -115,6 +115,9 @@ long create_jmptbl_ccount;
 <main_process>"then"    return(__STATE_THEN);
 <main_process>"else"    return(__STATE_ELSE);
 
+<main_process>"["       return(__ARRAY_BEGIN);
+<main_process>"]"       return(__ARRAY_END);
+
 <main_process>"goto"    return(__STATE_GOTO);
 
 <main_process>"print"   return(__FUNC_PRINT);

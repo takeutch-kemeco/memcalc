@@ -71,6 +71,7 @@ bool skip_flag = false;
 %token __OPE_SUBST
 
 %token __LB __RB
+%token __ARRAY_BEGIN __ARRAY_END
 %token __BLOCK_BEGIN __BLOCK_END
 %token __CAMMA
 %token __DECL_END
@@ -115,12 +116,7 @@ declaration_unit
 
         | expression __DECL_END
 
-        | declarator __OPE_SUBST initializer __DECL_END {
-                if (skip_flag == false) {
-                        double* tmp = (double*)($1->address);
-                        *tmp = $3;
-                }
-        }
+        | assignment __DECL_END
 
         | jump
 
@@ -155,20 +151,23 @@ func_putpixel
         }
         ;
 
+assignment
+        : declarator __OPE_SUBST initializer {
+                if (skip_flag == false) {
+                        double* tmp = (double*)($1->address);
+                        tmp[$1->index] = $3;
+                }
+        }
+        ;
+
 declarator
         : __IDENTIFIER {
-                if (skip_flag == false) {
-                        struct MemTag* p = get_ptr_var($1);
-                        if (p == NULL) {
-                                push_var($1, sizeof(double));
-                                p = get_ptr_var($1);
-
-                                double* tmp = (double*)(p->address);
-                                *tmp = 0;
-                        }
-
-                        $$ = p;
-                }
+                if (skip_flag == false)
+                        $$ =read_num_var_memtag($1, 0);
+        }
+        | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
+                if (skip_flag == false)
+                        $$ =read_num_var_memtag($1, (size_t)$3);
         }
         ;
 
@@ -317,19 +316,12 @@ expression
 
 read_variable
         : __IDENTIFIER {
-                if (skip_flag == false) {
-                        struct MemTag* p = get_ptr_var($1);
-                        if (p == NULL) {
-                                push_var($1, sizeof(double));
-                                p = get_ptr_var($1);
-
-                                double* tmp = (double*)(p->address);
-                                *tmp = 0;
-                        }
-
-                        double* tmp = (double*)(p->address);
-                        $$ = *tmp;
-                }
+                if (skip_flag == false)
+                        $$ = read_num_var_value($1, 0);
+        }
+        | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
+                if (skip_flag == false)
+                        $$ = read_num_var_value($1, (size_t)$3);
         }
         ;
 

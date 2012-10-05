@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include "mem.h"
 
@@ -65,6 +66,7 @@ static struct REF* ref_new(void)
         a->name[0] = '\0';
         a->tag.address = 0;
         a->tag.bytesize = 0;
+        a->tag.index = 0;
 
         return a;
 }
@@ -78,7 +80,7 @@ static void* seek_poolhead(void)
         return prev->tag.address + prev->tag.bytesize;
 }
 
-void push_var(char* name, size_t bytesize)
+void push_var(const char* name, size_t bytesize)
 {
         if (reflist[reflist_head] == NULL)
                 reflist[reflist_head] = ref_new();
@@ -101,7 +103,7 @@ void pop_var(void)
         reflist_head--;
 }
 
-static struct REF* search_ref(char* name)
+static struct REF* search_ref(const char* name)
 {
         const size_t name_len = strlen(name);
 
@@ -119,11 +121,32 @@ static struct REF* search_ref(char* name)
         return NULL;
 }
 
-struct MemTag* get_ptr_var(char* name)
+static struct MemTag* get_ptr_var(const char* name)
 {
         struct REF* p = search_ref(name);
         if (p == NULL)
                 return NULL;
 
         return &(p->tag);
+}
+
+struct MemTag* read_num_var_memtag(const char* name, const size_t index)
+{
+        struct MemTag* p = get_ptr_var(name);
+
+        if (p == NULL) {
+                push_var(name, sizeof(double) * index);
+                p = get_ptr_var(name);
+        }
+
+        p->index = index;
+        return p;
+}
+
+double read_num_var_value(const char* name, const size_t index)
+{
+        struct MemTag* p = read_num_var_memtag(name, index);
+
+        double* tmp = (double*)(p->address);
+        return tmp[p->index];
 }

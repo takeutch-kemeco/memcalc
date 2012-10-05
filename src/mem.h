@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <string.h>
+#include <stdbool.h>
 #include <sys/types.h>
 
 #ifndef __MEM_H__
@@ -25,13 +25,16 @@
 struct MemTag {
         void*  address;
         size_t bytesize;
+        size_t index;
 };
 
 void mem_init(void);
 void mem_close(void);
 
-void push_var(char* name, size_t bytesize);
+void push_var(const char* name, size_t bytesize);
 void pop_var(void);
-struct MemTag* get_ptr_var(char* name);
+
+struct MemTag* read_num_var_memtag(const char* name, const size_t index);
+double read_num_var_value(const char* name, const size_t index);
 
 #endif /* __MEM_H__ */
