@@ -31,9 +31,6 @@ struct MemTag {
 void mem_init(void);
 void mem_close(void);
 
-void push_var(const char* name, size_t bytesize);
-void pop_var(void);
-
 struct MemTag* read_num_var_memtag(const char* name, const size_t index);
 double read_num_var_value(const char* name, const size_t index);
 

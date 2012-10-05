@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include "mem.h"
 
-#define POOL_MAX 0x1000
+#define POOL_MAX 0x10000
 static u_char* pool;
 
 #define REF_NAME_MAX 0x100
@@ -80,7 +80,7 @@ static void* seek_poolhead(void)
         return prev->tag.address + prev->tag.bytesize;
 }
 
-void push_var(const char* name, size_t bytesize)
+static void push_var(const char* name, const size_t bytesize)
 {
         if (reflist[reflist_head] == NULL)
                 reflist[reflist_head] = ref_new();
@@ -93,7 +93,7 @@ void push_var(const char* name, size_t bytesize)
         reflist_head++;
 }
 
-void pop_var(void)
+static void pop_var(void)
 {
         if (reflist_head == 0) {
                 printf("error pop_var():\n");
