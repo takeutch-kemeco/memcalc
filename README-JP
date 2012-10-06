@@ -37,8 +37,6 @@ memcalc は bison, flex の勉強しながら書いた副産物です。
 
                 a = 1.4142;
 
-		備考
-
 
 
 	a[100]のように、１次元配列を扱えます。
@@ -103,7 +101,7 @@ memcalc は bison, flex の勉強しながら書いた副産物です。
         if 条件 { 命令1; 命令2; ... } else { 命令1; 命令2; ... }
         分岐先には複数命令を書けます。
         例：
-                if a == 1 then {
+                if a == 1 {
                         b = 1;
                         c = 2;
                         d = 3;
@@ -115,8 +113,8 @@ memcalc は bison, flex の勉強しながら書いた副産物です。
 
                 入れ子にもできます
                 例：
-                        if a == 1 then {
-                                if b == 1 then {
+                        if a == 1 {
+                                if b == 1 {
                                         goto label_a;
                                         b = 0;
                                 } else {
