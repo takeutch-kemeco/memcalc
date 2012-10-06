@@ -26,11 +26,14 @@
 
 long create_jmptbl_ccount;
 
+int skip_declaration_block_depth;
+
 %}
 
 %x create_jmptbl
 %x main_process
 %x main_process_comment
+%x main_process_skip_declaration_block
 
 %%
 
@@ -42,7 +45,7 @@ long create_jmptbl_ccount;
         jmptbl_add(tmp, create_jmptbl_ccount);
 }
 
-<create_jmptbl>.|[\n] {
+<create_jmptbl>.|[\n\r] {
         create_jmptbl_ccount += yyleng;
 }
 
@@ -133,7 +136,43 @@ long create_jmptbl_ccount;
 
 <main_process><<EOF>>   return(__EOF);
 
+<main_process_skip_declaration_block>[{] {
+printf("[%s] ", yytext);
+        if (skip_declaration_block_depth++ == 0)
+                return(__BLOCK_BEGIN);
+}
+
+<main_process_skip_declaration_block>[}] {
+printf("[%s] ", yytext);
+        if (--skip_declaration_block_depth == 0) {
+                BEGIN(main_process);
+                return(__BLOCK_END);
+        }
+}
+
+<main_process_skip_declaration_block>. {
+printf("[%s] ", yytext);
+}
+
 %%
 
-start_create_jmptbl() {BEGIN(create_jmptbl);}
-start_main_process() {BEGIN(main_process);}
+void start_create_jmptbl(void)
+{
+        BEGIN(create_jmptbl);
+}
+
+void start_main_process(void)
+{
+        BEGIN(main_process);
+}
+
+void skip_declaration_block(void)
+{
+printf("start[%s]\n", yytext);
+        if (strcmp(yytext, "{") == 0)
+                skip_declaration_block_depth = 1;
+        else
+                skip_declaration_block_depth = 0;
+
+        BEGIN(main_process_skip_declaration_block);
+}
