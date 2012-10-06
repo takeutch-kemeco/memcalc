@@ -55,7 +55,7 @@ void jump_run(long fpos)
 }
 
 %token __FUNC_PRINT __FUNC_PUTPIXEL
-%token __STATE_IF __STATE_THEN __STATE_ELSE
+%token __STATE_IF __STATE_ELSE
 %token __STATE_GOTO
 %token __CONST_FLOAT
 %token __OPE_PLUS __OPE_MINUS

@@ -115,7 +115,6 @@ int skip_declaration_block_depth;
 <main_process>";"       return(__DECL_END);
 
 <main_process>"if"      return(__STATE_IF);
-<main_process>"then"    return(__STATE_THEN);
 <main_process>"else"    return(__STATE_ELSE);
 
 <main_process>"["       return(__ARRAY_BEGIN);
@@ -137,13 +136,11 @@ int skip_declaration_block_depth;
 <main_process><<EOF>>   return(__EOF);
 
 <main_process_skip_declaration_block>[{] {
-printf("[%s] ", yytext);
         if (skip_declaration_block_depth++ == 0)
                 return(__BLOCK_BEGIN);
 }
 
 <main_process_skip_declaration_block>[}] {
-printf("[%s] ", yytext);
         if (--skip_declaration_block_depth == 0) {
                 BEGIN(main_process);
                 return(__BLOCK_END);
@@ -151,7 +148,6 @@ printf("[%s] ", yytext);
 }
 
 <main_process_skip_declaration_block>. {
-printf("[%s] ", yytext);
 }
 
 %%
@@ -168,7 +164,6 @@ void start_main_process(void)
 
 void skip_declaration_block(void)
 {
-printf("start[%s]\n", yytext);
         if (strcmp(yytext, "{") == 0)
                 skip_declaration_block_depth = 1;
         else
