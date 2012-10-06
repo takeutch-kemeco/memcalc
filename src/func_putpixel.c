@@ -89,7 +89,7 @@ static u_long rgb_to_color(double R, double G, double B)
         u_long r = (u_long)R;
         u_long g = (u_long)G;
         u_long b = (u_long)B;
-        return (r << 0) | (g << 8) | (b << 16);
+        return (b << 0) | (g << 8) | (r << 16);
 }
 
 static u_long hsv_to_color(double H, double S, double V)
@@ -103,7 +103,7 @@ void __func_putpixel(double x, double y,
                      double H, double S, double B)
 {
         u_long color = hsv_to_color(H, S, B);
-        int i = ((screen_width * 4) * y) + (x * 4);
+        u_long i = ((screen_width * 4) * y) + (x * 4);
         fseek(fp, i, SEEK_SET);
         fwrite((void*)&color, 4, 1, fp);
 }
