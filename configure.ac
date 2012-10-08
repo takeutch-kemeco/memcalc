@@ -10,7 +10,7 @@ AC_CONFIG_HEADERS([src/config.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_YACC
-AM_PROG_LEX
+AC_PROG_LEX
 
 AC_PATH_PROG([FLEX],  [flex])
 AC_PATH_PROG([BISON], [bison])
