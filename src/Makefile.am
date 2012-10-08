@@ -5,7 +5,7 @@ memcalc_SOURCES = memcalc.flex.l memcalc.bison.y        \
                   func_putpixel.c func_putpixel.h       \
                   mes.c mes.h
 
-LFLAGS = -Cf
+LFLAGS = -Cf -8
 YFLAGS = -dv
-CFLAGS = -O2 -mtune=native -g
+CFLAGS = -g
 LIBS = -lm -lfl
