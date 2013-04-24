@@ -1,4 +1,4 @@
-memcalc
+## memcalc
 
 memcalc は bison, flex の勉強しながら書いた副産物です。
 簡単な機能しか備えていない、単純な言語です。
@@ -7,24 +7,24 @@ memcalc は bison, flex の勉強しながら書いた副産物です。
 
 
 
-ビルド・インストール方法：
+### ビルド・インストール方法：
         bison, flex, autoconf, automake, libtool の入ってる環境にて
 
         ./autogen.sh --prefix=/usr/local
         make
         sudo make install
 
-アンインストール方法：
+### アンインストール方法：
         sudo make uninstall
 
 
 
-サンプルコード：
+### サンプルコード：
         sample/ 以下にテストに使ったコードの残骸がいろいろ残してあります。
 
 
 
-言語の全機能・仕様の説明：
+### 言語の全機能・仕様の説明：
 
         命令の最後には ; を付けます。
         C言語と同じです。
