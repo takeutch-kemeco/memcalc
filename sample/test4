@@ -6,7 +6,7 @@ print(a);
 goto MAIN;
 
 MAIN:
-if a == 3 then goto END; else goto AAA;
+if (a == 3) {goto END;} else {goto AAA;}
 
 END:
 
