@@ -245,11 +245,6 @@ static void hsv_to_rgb(double* colR, double* colG, double* colB,
         (*colR) = (255 + 0.5) * r;
         (*colG) = (255 + 0.5) * g;
         (*colB) = (255 + 0.5) * b;
-
-#ifdef DEBUG
-        printf("hsv_to_rgb(_ _ _ %f %f %f) => (colR[%f] colG[%f] colB[%f])\n",
-               H, S, V, *colR, *colG, *colB);
-#endif /* DEBUG */
 }
 
 static uint32_t rgb_to_color(const double R, const double G, const double B)
@@ -257,7 +252,7 @@ static uint32_t rgb_to_color(const double R, const double G, const double B)
         uint32_t r = R;
         uint32_t g = G;
         uint32_t b = B;
-        return (b << 8) | (g << 16) | (r << 24);
+        return (b << 0) | (g << 8) | (r << 16);
 }
 
 static u_long hsv_to_color(const double H, const double S, const double V)
