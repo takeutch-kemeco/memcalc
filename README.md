@@ -10,7 +10,9 @@ memcalc は bison, flex の勉強しながら書いた副産物です。
 ### ビルド・インストール方法：
         bison, flex, autoconf, automake, libtool の入ってる環境にて
 
-        ./autogen.sh --prefix=/usr/local
+        ./autogen.sh
+
+        ./configure
         make
         sudo make install
 
