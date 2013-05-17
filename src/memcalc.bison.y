@@ -23,8 +23,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+
 #include "mem.h"
 #include "jmptbl.h"
+
 #include "func_putpixel.h"
 
 #define YYMAXDEPTH 0x10000000
@@ -54,7 +56,7 @@ void jump_run(long fpos)
         u_int icf;
 }
 
-%token __FUNC_PRINT __FUNC_PUTPIXEL
+%token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
 %token __STATE_GOTO
 %token __CONST_FLOAT
@@ -135,6 +137,7 @@ declaration_unit
 function
         : func_print
         | func_putpixel
+        | func_putchar
         ;
 
 func_print
@@ -149,6 +152,12 @@ func_putpixel
           expression __CAMMA expression
           __RB __DECL_END {
                 __func_putpixel($3, $5, $7, $9, $11);
+        }
+        ;
+
+func_putchar
+        : __FUNC_PUTCHAR __LB expression __RB __DECL_END {
+                putchar($3);
         }
         ;
 

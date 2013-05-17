@@ -163,8 +163,9 @@ int skip_declaration_block_depth;
 
 <main_process>"goto"    return(__STATE_GOTO);
 
-<main_process>"print"   return(__FUNC_PRINT);
+<main_process>"print"           return(__FUNC_PRINT);
 <main_process>"putpixel"        return(__FUNC_PUTPIXEL);
+<main_process>"putchar"         return(__FUNC_PUTCHAR);
 
 <main_process>[_a-zA-Z][_0-9a-zA-Z]* {
         strcpy(yylval.identifier, yytext);
