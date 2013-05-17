@@ -33,6 +33,7 @@ int skip_declaration_block_depth;
 %x create_jmptbl
 %x main_process
 %x main_process_comment
+%x main_process_char
 %x main_process_skip_declaration_block
 
 %%
@@ -65,6 +66,46 @@ int skip_declaration_block_depth;
 
 <main_process>"//".*[\n] {
         /* c++ スタイルのコメント */
+}
+
+<main_process>['] {
+        /* 一文字リテラルの開始点 */
+        BEGIN(main_process_char);
+}
+
+<main_process_char>['] {
+        /* 一文字リテラルの終了点 */
+        BEGIN(main_process);
+}
+
+<main_process_char>[\\][n] {
+        yylval.val = '\n';
+        return(__CONST_FLOAT);
+}
+
+<main_process_char>[\\][0] {
+        yylval.val = '\0';
+        return(__CONST_FLOAT);
+}
+
+<main_process_char>[\\][\\] {
+        yylval.val = '\\';
+        return(__CONST_FLOAT);
+}
+
+<main_process_char>[\\]['] {
+        yylval.val = '\'';
+        return(__CONST_FLOAT);
+}
+
+<main_process_char>[\\]["] {
+        yylval.val = '\"';
+        return(__CONST_FLOAT);
+}
+
+<main_process_char>. {
+        yylval.val = yytext[0];
+        return(__CONST_FLOAT);
 }
 
 <main_process>[0][0-9]+[.]?[0-9]* {
