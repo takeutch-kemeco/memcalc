@@ -17,14 +17,177 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
-#include <sys/types.h>
-#include <linux/fb.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <fcntl.h>
+#include <error.h>
+#include <sys/user.h>
 #include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <linux/fb.h>
 
-static u_int screen_width = 1920;
-static u_int screen_height = 1080;
-static FILE* fp;
+static char fb_dev_name[] = "/dev/fb0";
+
+static int fh;
+static uint32_t screen_height;
+static uint32_t screen_width;
+static uint32_t bytePerLine;
+static uint32_t soff;
+static uint32_t slen;
+static void *smem;
+
+static struct fb_var_screeninfo fb_var;
+static struct fb_fix_screeninfo fb_fix;
+
+static inline void print_fb_info(void)
+{
+#ifdef DEBUG
+        printf("identification string eg [%s]\n"
+               "Start of frame buffer mem [%u]\n"
+               "Length of frame buffer mem [%u]\n"
+               "see FB_TYPE_ [%u]\n"
+               "Interleave for interleaved Planes [%u]\n"
+               "see FB_VISUAL_ [%u]\n"
+               "zero if no hardware panning [%u]\n"
+               "zero if no hardware panning [%u]\n"
+               "zero if no hardware ywrap [%u]\n"
+               "length of a line in bytes [%u]\n"
+               "Start of Memory Mapped I/O [%u]\n"
+               "Length of Memory Mapped I/O [%u]\n"
+               "Indicate to driver which [%u]\n",
+               fb_fix.id,
+               fb_fix.smem_start,
+               fb_fix.smem_len,
+               fb_fix.type,
+               fb_fix.type_aux,
+               fb_fix.visual,
+               fb_fix.xpanstep,
+               fb_fix.ypanstep,
+               fb_fix.ywrapstep,
+               fb_fix.line_length,
+               fb_fix.mmio_start,
+               fb_fix.mmio_len,
+               fb_fix.accel);
+
+        printf("visible resolution x[%u] y[%u]\n"
+               "virtual resolution x[%u] y[%u]\n"
+               "offset from virtual to visible x[%u] y[%u]\n"
+               "guess what [%d]\n"
+               "!= 0 Graylevels instead of colors [%u]\n"
+               "bitfield in fb mem if true color, r ofs[%u] len[%u] msb_right[%u]\n"
+               "bitfield in fb mem if true color, g ofs[%u] len[%u] msb_right[%u]\n"
+               "bitfield in fb mem if true color, b ofs[%u] len[%u] msb_right[%u]\n"
+               "bitfield in fb mem if true color, t ofs[%u] len[%u] msb_right[%u]\n"
+               "!= 0 Non standard pixel format [%u]\n"
+               "see FB_ACTIVATE_ [%u]\n"
+               "height of picture in mm [%u]\n"
+               "width of picture in mm [%u]\n"
+               "(OBSOLETE) see fb_info.flags [%u]\n",
+               fb_var.xres, fb_var.yres,
+               fb_var.xres_virtual, fb_var.yres_virtual,
+               fb_var.xoffset, fb_var.yoffset,
+               fb_var.bits_per_pixel,
+               fb_var.grayscale,
+               fb_var.red.offset, fb_var.red.length, fb_var.red.msb_right,
+               fb_var.green.offset, fb_var.green.length, fb_var.green.msb_right,
+               fb_var.blue.offset, fb_var.blue.length, fb_var.blue.msb_right,
+               fb_var.transp.offset, fb_var.transp.length, fb_var.transp.msb_right,
+               fb_var.nonstd,
+               fb_var.activate,
+               fb_var.height,
+               fb_var.width,
+               fb_var.accel_flags);
+#endif /* DEBUG*/
+}
+
+void __init_func_putpixel(void)
+{
+        int err;
+
+        if ((fh = open(fb_dev_name, O_RDWR)) == -1) {
+                error(fh, 1,
+                      "フレームバッファーデバイス %s のオープンに失敗しました\n",
+                      fb_dev_name);
+                exit(EXIT_FAILURE);
+        }
+
+        struct stat st;
+        if ((err = fstat(fh, &st)) == -1) {
+                error(err, 2,
+                      "デバイス %s のファイルステータス取得に失敗しました\n",
+                      fb_dev_name);
+                exit(EXIT_FAILURE);
+        }
+
+        if (!S_ISCHR(st.st_mode) || major(st.st_rdev) != 29 /* FB_MAJOR */) {
+                error(0, 3,
+                      "デバイス %s をフレームバッファーとして利用できません\n",
+                      fb_dev_name);
+                exit(EXIT_FAILURE);
+        }
+
+        struct fb_var_screeninfo fb_var;
+        if (err = ioctl(fh, FBIOGET_VSCREENINFO, &fb_var)) {
+                error(err, 4, "fb_var_screeninfo の取得に失敗しました\n");
+                exit(EXIT_FAILURE);
+        }
+
+        struct fb_fix_screeninfo fb_fix;
+        if (err = ioctl(fh, FBIOGET_FSCREENINFO, &fb_fix)) {
+                error(err, 5, "fb_fix_screeninfo の取得に失敗しました\n");
+                exit(EXIT_FAILURE);
+        }
+
+        screen_width  = fb_var.xres;
+        screen_height = fb_var.yres;
+        bytePerLine = fb_fix.line_length;
+
+        soff = (uint32_t)(fb_fix.smem_start) & (~PAGE_MASK);
+        slen = (fb_fix.smem_len + soff + ~PAGE_MASK) & PAGE_MASK;
+
+        smem = mmap(NULL, slen, PROT_READ | PROT_WRITE, MAP_SHARED,
+                    fh, (off_t)0);
+        if (smem == (void*)-1) {
+                error(-1, 6,
+                      "デバイス %s のメモリーマッピングに失敗しました\n",
+                      fb_dev_name);
+                exit(EXIT_FAILURE);
+        }
+
+        smem = (void*)smem + soff;
+
+#ifdef DEBUG
+        print_fb_info();
+#endif /* DEBUG */
+}
+
+void __close_func_putpixel(void)
+{
+        if (smem != (void*)-1)
+                munmap((caddr_t)((ptrdiff_t)smem & PAGE_MASK), slen);
+
+        close(fh);
+}
+
+static inline uint32_t* fb_seek_pix_adrs(const uint32_t x, const uint32_t y)
+{
+        return smem + (y * bytePerLine) + (x << 2);
+}
+
+static void fb_set_pixel(const uint32_t x, const uint32_t y,
+                         const uint32_t col)
+{
+        if ((x >= 0 && x < screen_width) && (y >= 0 && y < screen_height)) {
+                uint32_t* d = fb_seek_pix_adrs(x, y);
+                *d = col;
+        }
+}
 
 static void hsv_to_rgb(double* colR, double* colG, double* colB,
                        double H, double S, double V)
@@ -82,100 +245,31 @@ static void hsv_to_rgb(double* colR, double* colG, double* colB,
         (*colR) = (255 + 0.5) * r;
         (*colG) = (255 + 0.5) * g;
         (*colB) = (255 + 0.5) * b;
+
+#ifdef DEBUG
+        printf("hsv_to_rgb(_ _ _ %f %f %f) => (colR[%f] colG[%f] colB[%f])\n",
+               H, S, V, *colR, *colG, *colB);
+#endif /* DEBUG */
 }
 
-static u_long rgb_to_color(double R, double G, double B)
+static uint32_t rgb_to_color(const double R, const double G, const double B)
 {
-        u_long r = (u_long)R;
-        u_long g = (u_long)G;
-        u_long b = (u_long)B;
-        return (b << 0) | (g << 8) | (r << 16);
+        uint32_t r = R;
+        uint32_t g = G;
+        uint32_t b = B;
+        return (b << 8) | (g << 16) | (r << 24);
 }
 
-static u_long hsv_to_color(double H, double S, double V)
+static u_long hsv_to_color(const double H, const double S, const double V)
 {
         double R, G, B;
         hsv_to_rgb(&R, &G, &B, H, S, V);
         return rgb_to_color(R, G, B);
 }
 
-void __func_putpixel(double x, double y,
-                     double H, double S, double B)
+void __func_putpixel(const double x, const double y,
+                     const double H, const double S, const double V)
 {
-        u_long color = hsv_to_color(H, S, B);
-        u_long i = ((screen_width * 4) * y) + (x * 4);
-        fseek(fp, i, SEEK_SET);
-        fwrite((void*)&color, 4, 1, fp);
-}
-
-void __init_func_putpixel(void)
-{
-        fp = fopen("/dev/fb0", "wb");
-
-#ifdef __DEBUG__
-        struct fb_fix_screeninfo fixinfo;
-        ioctl(fp, FBIOGET_FSCREENINFO, &fixinfo);
-        printf("identification string eg [%s]\n"
-               "Start of frame buffer mem [%u]\n"
-               "Length of frame buffer mem [%u]\n"
-               "see FB_TYPE_ [%u]\n"
-               "Interleave for interleaved Planes [%u]\n"
-               "see FB_VISUAL_ [%u]\n"
-               "zero if no hardware panning [%u]\n"
-               "zero if no hardware panning [%u]\n"
-               "zero if no hardware ywrap [%u]\n"
-               "length of a line in bytes [%u]\n"
-               "Start of Memory Mapped I/O [%u]\n"
-               "Length of Memory Mapped I/O [%u]\n"
-               "Indicate to driver which [%u]\n",
-               fixinfo.id,
-               fixinfo.smem_start,
-               fixinfo.smem_len,
-               fixinfo.type,
-               fixinfo.type_aux,
-               fixinfo.visual,
-               fixinfo.xpanstep,
-               fixinfo.ypanstep,
-               fixinfo.ywrapstep,
-               fixinfo.line_length,
-               fixinfo.mmio_start,
-               fixinfo.mmio_len,
-               fixinfo.accel);
-        fixinfo.type = FB_VISUAL_DIRECTCOLOR;
-
-        struct fb_var_screeninfo varinfo;
-        ioctl(fp, FBIOGET_VSCREENINFO, &varinfo);
-        printf("visible resolution x[%u] y[%u]\n"
-               "virtual resolution x[%u] y[%u]\n"
-               "offset from virtual to visible x[%u] y[%u]\n"
-               "guess what [%d]\n"
-               "!= 0 Graylevels instead of colors [%u]\n"
-               "bitfield in fb mem if true color, r ofs[%u] len[%u] msb_right[%u]\n"
-               "bitfield in fb mem if true color, g ofs[%u] len[%u] msb_right[%u]\n"
-               "bitfield in fb mem if true color, b ofs[%u] len[%u] msb_right[%u]\n"
-               "bitfield in fb mem if true color, t ofs[%u] len[%u] msb_right[%u]\n"
-               "!= 0 Non standard pixel format [%u]\n"
-               "see FB_ACTIVATE_ [%u]\n"
-               "height of picture in mm [%u]\n"
-               "width of picture in mm [%u]\n"
-               "(OBSOLETE) see fb_info.flags [%u]\n",
-               varinfo.xres, varinfo.yres,
-               varinfo.xres_virtual, varinfo.yres_virtual,
-               varinfo.xoffset, varinfo.yoffset,
-               varinfo.bits_per_pixel,
-               varinfo.grayscale,
-               varinfo.red.offset, varinfo.red.length, varinfo.red.msb_right,
-               varinfo.green.offset, varinfo.green.length, varinfo.green.msb_right,
-               varinfo.blue.offset, varinfo.blue.length, varinfo.blue.msb_right,
-               varinfo.transp.offset, varinfo.transp.length, varinfo.transp.msb_right,
-               varinfo.nonstd,
-               varinfo.activate,
-               varinfo.height,
-               varinfo.width,
-               varinfo.accel_flags);
-
-        struct fb_cmap cmap;
-        ioctl(fp, FBIOGETCMAP, &cmap);
-        printf("\nstart[%u] len[%u]\n", cmap.start, cmap.len);
-#endif
+        uint32_t color = hsv_to_color(H, S, V);
+        fb_set_pixel((uint32_t)x, (uint32_t)y, color);
 }
