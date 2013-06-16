@@ -32,8 +32,6 @@ blMain()
         mem_init();
         jmptbl_init();
 
-        init_func_all();
-
         start_create_jmptbl();
         while (yylex() != 0) {
         }

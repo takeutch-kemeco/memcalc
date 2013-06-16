@@ -90,7 +90,7 @@ void jump_run(long fpos)
 %left __OPE_MUL __OPE_DIV __OPE_MOD
 %left __OPE_PLUS __OPE_MINUS
 
-%type <val> __CONST_FLOAT expression initializer read_variable
+%type <val> __CONST_FLOAT expression initializer function read_variable
 %type <val> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
 %type <icf> if_conditional
 %type <identifier> __IDENTIFIER
@@ -121,7 +121,7 @@ declaration_unit
 
         | selection
 
-        | function
+        | function __DECL_END
 
         | expression __DECL_END
 
@@ -146,7 +146,7 @@ function
         ;
 
 func_print
-        : __FUNC_PRINT __LB expression __RB __DECL_END {
+        : __FUNC_PRINT __LB expression __RB {
                 printf("%f\n", $3);
         }
         ;
@@ -154,14 +154,13 @@ func_print
 func_putpixel
         : __FUNC_PUTPIXEL __LB
           expression __CAMMA expression __CAMMA expression __CAMMA
-          expression __CAMMA expression
-          __RB __DECL_END {
+          expression __CAMMA expression __RB {
                 __func_putpixel($3, $5, $7, $9, $11);
         }
         ;
 
 func_putchar
-        : __FUNC_PUTCHAR __LB expression __RB __DECL_END {
+        : __FUNC_PUTCHAR __LB expression __RB {
                 putchar($3);
         }
         ;
@@ -208,206 +207,205 @@ func_blike
 	;
 
 func_bl_putc
-	: __FUNC_BL_PUTC __LB expression __RB __DECL_END {
+	: __FUNC_BL_PUTC __LB expression __RB {
 		bl_putc($3);
 	}
 	;
 
 func_bl_puts1
-	: __FUNC_BL_PUTS1 __LB expression __RB __DECL_END {
+	: __FUNC_BL_PUTS1 __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_printf
-	: __FUNC_BL_PRINTF __LB expression __RB __DECL_END {
+	: __FUNC_BL_PRINTF __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_scanf
-	: __FUNC_BL_SCANF __LB expression __RB __DECL_END {
+	: __FUNC_BL_SCANF __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_malloc
-      	: __FUNC_BL_MALLOC __LB expression __RB __DECL_END {
+      	: __FUNC_BL_MALLOC __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_rand
-       	: __FUNC_BL_RAND __LB  __RB __DECL_END {
+       	: __FUNC_BL_RAND __LB  __RB {
 		bl_rand();
 	}
 	;
 
 func_bl_srand
-	: __FUNC_BL_SRAND __LB expression __RB __DECL_END {
+	: __FUNC_BL_SRAND __LB expression __RB {
 		bl_srand($3);
 	}
 	;
 
 func_bl_gets
-	: __FUNC_BL_GETS __LB expression __RB __DECL_END {
+	: __FUNC_BL_GETS __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_openWin
-	: __FUNC_BL_OPENWIN __LB expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_OPENWIN __LB expression __CAMMA expression __RB {
 		bl_openWin($3, $5);
 	}
 	;
 
 func_bl_setCol
-	: __FUNC_BL_SETCOL __LB expression __RB __DECL_END {
+	: __FUNC_BL_SETCOL __LB expression __RB {
 		bl_setCol($3);
 	}
 	;
 
 func_bl_setBCol
-	: __FUNC_BL_SETBCOL __LB expression __RB __DECL_END {
+	: __FUNC_BL_SETBCOL __LB expression __RB {
 		bl_setBCol($3);
 	}
 	;
 
 func_bl_rgb
-	: __FUNC_BL_RGB __LB expression __CAMMA expression __CAMMA expression __RB __DECL_END {
-		$$ = (uint32_t)bl_rgb($3, $5, $7);
+	: __FUNC_BL_RGB __LB expression __CAMMA expression __CAMMA expression __RB {
+		$$ = bl_rgb((uint32_t)$3, (uint32_t)$5, (uint32_t)$7);
 	}
 	;
 
 func_bl_iCol
-	: __FUNC_BL_ICOL __LB expression __RB __DECL_END {
+	: __FUNC_BL_ICOL __LB expression __RB {
 		$$ = bl_iCol($3);
 	}
 	;
 
 func_bl_flshWin
-	: __FUNC_BL_FLSHWIN __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_FLSHWIN __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
 		bl_flshWin($3, $5, $7, $9);
 	}
 	;
 
 func_bl_getGrpB
-	: __FUNC_BL_GETGRPB __LB __RB __DECL_END {
+	: __FUNC_BL_GETGRPB __LB __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_setPix
-	: __FUNC_BL_SETPIX __LB expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_SETPIX __LB expression __CAMMA expression __CAMMA expression __RB {
 		bl_setPix($3, $5, $7);
 	}
 	;
 
 func_bl_fillRect
-	: __FUNC_BL_FILLRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_FILLRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
 		bl_fillRect($3, $5, $7, $9);
 	}
 	;
 
 func_bl_drawRect
-	: __FUNC_BL_DRAWRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_DRAWRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
 		bl_drawRect($3, $5, $7, $9);
 	}
 	;
 
 func_bl_drawLine
-	: __FUNC_BL_DRAWLINE __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_DRAWLINE __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
 		bl_drawLine($3, $5, $7, $9);
 	}
 	;
 
 func_bl_rnd
-	: __FUNC_BL_RND __LB expression __RB __DECL_END {
+	: __FUNC_BL_RND __LB expression __RB {
 		$$ = bl_rnd($3);
 	}
 	;
 
 func_bl_wait
-	: __FUNC_BL_WAIT __LB expression __RB __DECL_END {
+	: __FUNC_BL_WAIT __LB expression __RB {
 		bl_wait($3);
 	}
 	;
 
 func_bl_color
-	: __FUNC_BL_COLOR __LB expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_COLOR __LB expression __CAMMA expression __RB {
 		bl_color($3, $5);
 	}
 	;
 
 func_bl_locate
-	: __FUNC_BL_LOCATE __LB expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_LOCATE __LB expression __CAMMA expression __RB {
 		bl_locate($3, $5);
 	}
 	;
 
 func_bl_getPix
-	: __FUNC_BL_GETPIX __LB expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_GETPIX __LB expression __CAMMA expression __RB {
 		$$ = bl_getPix($3, $5);
 	}
 	;
 
 func_bl_waitNF
-	: __FUNC_BL_WAITNF __LB expression __RB __DECL_END {
+	: __FUNC_BL_WAITNF __LB expression __RB {
 		bl_waitNF($3);
 	}
 	;
 
 func_bl_inkey1
-	: __FUNC_BL_INKEY1 __LB expression __RB __DECL_END {
+	: __FUNC_BL_INKEY1 __LB expression __RB {
 		$$ = bl_inkey1($3);
 	}
 	;
 
 func_bl_cls
-	: __FUNC_BL_CLS __LB expression __RB __DECL_END {
+	: __FUNC_BL_CLS __LB expression __RB {
 		bl_cls();
 	}
 	;
 
 func_bl_inptInt
-	: __FUNC_BL_INPTINT __LB expression __RB __DECL_END {
+	: __FUNC_BL_INPTINT __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_inptFlot
-	: __FUNC_BL_INPTFLOT __LB expression __RB __DECL_END {
+	: __FUNC_BL_INPTFLOT __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_setMode
-	: __FUNC_BL_SETMODE __LB expression __RB __DECL_END {
+	: __FUNC_BL_SETMODE __LB expression __RB {
 		bl_setMode($3);
 	}
 	;
 
 func_bl_fillOval
-	: __FUNC_BL_FILLOVAL __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+	: __FUNC_BL_FILLOVAL __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
 		bl_fillOval($3, $5, $7, $9);
 	}
 	;
 
 func_bl_drawStr
-	: __FUNC_BL_DRAWSTR __LB expression __RB __DECL_END {
+	: __FUNC_BL_DRAWSTR __LB expression __RB {
 		/* undefined */
 	}
 	;
 
 func_bl_openVWin
-	: __FUNC_BL_OPENVWIN __LB expression __CAMMA expression __CAMMA expression __RB __DECL_END
-	{
+	: __FUNC_BL_OPENVWIN __LB expression __CAMMA expression __CAMMA expression __RB {
 		bl_openVWin($3, $5, $7);
 	}
 	;
 
 func_bl_slctWin
-	: __FUNC_BL_SLCTWIN __LB expression __RB __DECL_END {
+	: __FUNC_BL_SLCTWIN __LB expression __RB {
 		bl_slctWin($3);
 	}
 	;
@@ -415,7 +413,7 @@ func_bl_slctWin
 func_bl_copyRct0
 	: __FUNC_BL_COPYRCT0 __LB 
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-		expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __RB
 	{
 		bl_copyRct0($3, $5, $7, $9, $11, $13, $15, $17);
 	}
@@ -425,7 +423,7 @@ func_bl_copyRct1
 	: __FUNC_BL_COPYRCT1 __LB 
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-		expression __RB __DECL_END
+		expression __RB
 	{
 		bl_copyRct1($3, $5, $7, $9, $11, $13, $15, $17, $19);
 	}
@@ -434,7 +432,7 @@ func_bl_copyRct1
 func_bl_drawPtrn_d
 	: __FUNC_BL_DRAWPTRN_D __LB
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-		expression __CAMMA expression __RB __DECL_END
+		expression __CAMMA expression __RB
 	{
 		/* undefined */
 	}
@@ -443,7 +441,7 @@ func_bl_drawPtrn_d
 func_bl_drawPtrn_r
 	: __FUNC_BL_DRAWPTRN_R __LB
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-		expression __CAMMA expression __RB __DECL_END
+		expression __CAMMA expression __RB
 	{
 		/* undefined */
 	}
@@ -469,6 +467,9 @@ initializer
         : expression {
                 $$ = $1;
         }
+	| function {
+		$$ = $1;
+	}
         ;
 
 expression
@@ -620,7 +621,3 @@ jump
         ;
 
 %%
-
-void init_func_all(void)
-{
-}
