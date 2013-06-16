@@ -208,7 +208,7 @@ func_blike
 
 func_bl_putc
 	: __FUNC_BL_PUTC __LB expression __RB {
-		bl_putc($3);
+		bl_putc((int32_t)$3);
 	}
 	;
 
@@ -244,7 +244,7 @@ func_bl_rand
 
 func_bl_srand
 	: __FUNC_BL_SRAND __LB expression __RB {
-		bl_srand($3);
+		bl_srand((int32_t)$3);
 	}
 	;
 
@@ -256,19 +256,19 @@ func_bl_gets
 
 func_bl_openWin
 	: __FUNC_BL_OPENWIN __LB expression __CAMMA expression __RB {
-		bl_openWin($3, $5);
+		bl_openWin((int32_t)$3, (int32_t)$5);
 	}
 	;
 
 func_bl_setCol
 	: __FUNC_BL_SETCOL __LB expression __RB {
-		bl_setCol($3);
+		bl_setCol((int32_t)$3);
 	}
 	;
 
 func_bl_setBCol
 	: __FUNC_BL_SETBCOL __LB expression __RB {
-		bl_setBCol($3);
+		bl_setBCol((int32_t)$3);
 	}
 	;
 
@@ -280,13 +280,13 @@ func_bl_rgb
 
 func_bl_iCol
 	: __FUNC_BL_ICOL __LB expression __RB {
-		$$ = bl_iCol($3);
+		$$ = bl_iCol((int32_t)$3);
 	}
 	;
 
 func_bl_flshWin
 	: __FUNC_BL_FLSHWIN __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-		bl_flshWin($3, $5, $7, $9);
+		bl_flshWin((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9);
 	}
 	;
 
@@ -298,67 +298,67 @@ func_bl_getGrpB
 
 func_bl_setPix
 	: __FUNC_BL_SETPIX __LB expression __CAMMA expression __CAMMA expression __RB {
-		bl_setPix($3, $5, $7);
+		bl_setPix((int32_t)$3, (int32_t)$5, (int32_t)$7);
 	}
 	;
 
 func_bl_fillRect
 	: __FUNC_BL_FILLRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-		bl_fillRect($3, $5, $7, $9);
+		bl_fillRect((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9);
 	}
 	;
 
 func_bl_drawRect
 	: __FUNC_BL_DRAWRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-		bl_drawRect($3, $5, $7, $9);
+		bl_drawRect((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9);
 	}
 	;
 
 func_bl_drawLine
 	: __FUNC_BL_DRAWLINE __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-		bl_drawLine($3, $5, $7, $9);
+		bl_drawLine((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9);
 	}
 	;
 
 func_bl_rnd
 	: __FUNC_BL_RND __LB expression __RB {
-		$$ = bl_rnd($3);
+		$$ = bl_rnd((int32_t)$3);
 	}
 	;
 
 func_bl_wait
 	: __FUNC_BL_WAIT __LB expression __RB {
-		bl_wait($3);
+		bl_wait((int32_t)$3);
 	}
 	;
 
 func_bl_color
 	: __FUNC_BL_COLOR __LB expression __CAMMA expression __RB {
-		bl_color($3, $5);
+		bl_color((int32_t)$3, (int32_t)$5);
 	}
 	;
 
 func_bl_locate
 	: __FUNC_BL_LOCATE __LB expression __CAMMA expression __RB {
-		bl_locate($3, $5);
+		bl_locate((int32_t)$3, (int32_t)$5);
 	}
 	;
 
 func_bl_getPix
 	: __FUNC_BL_GETPIX __LB expression __CAMMA expression __RB {
-		$$ = bl_getPix($3, $5);
+		$$ = bl_getPix((int32_t)$3, (int32_t)$5);
 	}
 	;
 
 func_bl_waitNF
 	: __FUNC_BL_WAITNF __LB expression __RB {
-		bl_waitNF($3);
+		bl_waitNF((int32_t)$3);
 	}
 	;
 
 func_bl_inkey1
-	: __FUNC_BL_INKEY1 __LB expression __RB {
-		$$ = bl_inkey1($3);
+	: __FUNC_BL_INKEY1 __LB __RB {
+		$$ = bl_inkey1();
 	}
 	;
 
@@ -382,13 +382,13 @@ func_bl_inptFlot
 
 func_bl_setMode
 	: __FUNC_BL_SETMODE __LB expression __RB {
-		bl_setMode($3);
+		bl_setMode((int32_t)$3);
 	}
 	;
 
 func_bl_fillOval
 	: __FUNC_BL_FILLOVAL __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-		bl_fillOval($3, $5, $7, $9);
+		bl_fillOval((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9);
 	}
 	;
 
@@ -400,13 +400,13 @@ func_bl_drawStr
 
 func_bl_openVWin
 	: __FUNC_BL_OPENVWIN __LB expression __CAMMA expression __CAMMA expression __RB {
-		bl_openVWin($3, $5, $7);
+		bl_openVWin((int32_t)$3, (int32_t)$5, (int32_t)$7);
 	}
 	;
 
 func_bl_slctWin
 	: __FUNC_BL_SLCTWIN __LB expression __RB {
-		bl_slctWin($3);
+		bl_slctWin((int32_t)$3);
 	}
 	;
 
@@ -415,7 +415,8 @@ func_bl_copyRct0
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __RB
 	{
-		bl_copyRct0($3, $5, $7, $9, $11, $13, $15, $17);
+		bl_copyRct0((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9,
+                            (int32_t)$11, (int32_t)$13, (int32_t)$15, (int32_t)$17);
 	}
 	;
 
@@ -425,7 +426,8 @@ func_bl_copyRct1
 		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
 		expression __RB
 	{
-		bl_copyRct1($3, $5, $7, $9, $11, $13, $15, $17, $19);
+		bl_copyRct1((int32_t)$3, (int32_t)$5, (int32_t)$7, (int32_t)$9,
+                            (int32_t)$11, (int32_t)$13, (int32_t)$15, (int32_t)$17, (int32_t)$19);
 	}
 	;
 
