@@ -18,9 +18,10 @@
 
 %{
 
-#include <stdio.h>
+#include <blike0.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
 
@@ -56,6 +57,8 @@ void jump_run(long fpos)
         u_int icf;
 }
 
+%token __FUNC_BL_PUTC __FUNC_BL_PUTS1 __FUNC_BL_PRINTF __FUNC_BL_SCANF __FUNC_BL_MALLOC __FUNC_BL_RAND __FUNC_BL_SRAND __FUNC_BL_GETS __FUNC_BL_OPENWIN __FUNC_BL_SETCOL __FUNC_BL_SETBCOL __FUNC_BL_RGB __FUNC_BL_ICOL __FUNC_BL_FLSHWIN __FUNC_BL_GETGRPB __FUNC_BL_SETPIX __FUNC_BL_FILLRECT __FUNC_BL_DRAWRECT __FUNC_BL_DRAWLINE __FUNC_BL_RND __FUNC_BL_WAIT __FUNC_BL_COLOR __FUNC_BL_LOCATE __FUNC_BL_GETPIX __FUNC_BL_WAITNF __FUNC_BL_INKEY1 __FUNC_BL_CLS __FUNC_BL_INPTINT __FUNC_BL_INPTFLOT __FUNC_BL_SETMODE __FUNC_BL_FILLOVAL __FUNC_BL_DRAWSTR __FUNC_BL_OPENVWIN __FUNC_BL_SLCTWIN __FUNC_BL_COPYRCT0 __FUNC_BL_COPYRCT1 __FUNC_BL_DRAWPTRN_D __FUNC_BL_DRAWPTRN_R
+
 %token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
 %token __STATE_GOTO
@@ -88,6 +91,7 @@ void jump_run(long fpos)
 %left __OPE_PLUS __OPE_MINUS
 
 %type <val> __CONST_FLOAT expression initializer read_variable
+%type <val> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
 %type <icf> if_conditional
 %type <identifier> __IDENTIFIER
 %type <memtag> declarator
@@ -138,6 +142,7 @@ function
         : func_print
         | func_putpixel
         | func_putchar
+	| func_blike
         ;
 
 func_print
@@ -160,6 +165,289 @@ func_putchar
                 putchar($3);
         }
         ;
+
+func_blike
+	: func_bl_putc
+	| func_bl_puts1
+	| func_bl_printf
+	| func_bl_scanf
+	| func_bl_malloc
+	| func_bl_rand
+	| func_bl_srand
+	| func_bl_gets
+	| func_bl_openWin
+	| func_bl_setCol
+	| func_bl_setBCol
+	| func_bl_rgb
+	| func_bl_iCol
+	| func_bl_flshWin
+	| func_bl_getGrpB
+	| func_bl_setPix
+	| func_bl_fillRect
+	| func_bl_drawRect
+	| func_bl_drawLine
+	| func_bl_rnd
+	| func_bl_wait
+	| func_bl_color
+	| func_bl_locate
+	| func_bl_getPix
+	| func_bl_waitNF
+	| func_bl_inkey1
+	| func_bl_cls
+	| func_bl_inptInt
+	| func_bl_inptFlot
+	| func_bl_setMode
+	| func_bl_fillOval
+	| func_bl_drawStr
+	| func_bl_openVWin
+	| func_bl_slctWin
+	| func_bl_copyRct0
+	| func_bl_copyRct1
+	| func_bl_drawPtrn_d
+	| func_bl_drawPtrn_r
+	;
+
+func_bl_putc
+	: __FUNC_BL_PUTC __LB expression __RB __DECL_END {
+		bl_putc($3);
+	}
+	;
+
+func_bl_puts1
+	: __FUNC_BL_PUTS1 __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_printf
+	: __FUNC_BL_PRINTF __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_scanf
+	: __FUNC_BL_SCANF __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_malloc
+      	: __FUNC_BL_MALLOC __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_rand
+       	: __FUNC_BL_RAND __LB  __RB __DECL_END {
+		bl_rand();
+	}
+	;
+
+func_bl_srand
+	: __FUNC_BL_SRAND __LB expression __RB __DECL_END {
+		bl_srand($3);
+	}
+	;
+
+func_bl_gets
+	: __FUNC_BL_GETS __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_openWin
+	: __FUNC_BL_OPENWIN __LB expression __CAMMA expression __RB __DECL_END {
+		bl_openWin($3, $5);
+	}
+	;
+
+func_bl_setCol
+	: __FUNC_BL_SETCOL __LB expression __RB __DECL_END {
+		bl_setCol($3);
+	}
+	;
+
+func_bl_setBCol
+	: __FUNC_BL_SETBCOL __LB expression __RB __DECL_END {
+		bl_setBCol($3);
+	}
+	;
+
+func_bl_rgb
+	: __FUNC_BL_RGB __LB expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		$$ = (uint32_t)bl_rgb($3, $5, $7);
+	}
+	;
+
+func_bl_iCol
+	: __FUNC_BL_ICOL __LB expression __RB __DECL_END {
+		$$ = bl_iCol($3);
+	}
+	;
+
+func_bl_flshWin
+	: __FUNC_BL_FLSHWIN __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		bl_flshWin($3, $5, $7, $9);
+	}
+	;
+
+func_bl_getGrpB
+	: __FUNC_BL_GETGRPB __LB __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_setPix
+	: __FUNC_BL_SETPIX __LB expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		bl_setPix($3, $5, $7);
+	}
+	;
+
+func_bl_fillRect
+	: __FUNC_BL_FILLRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		bl_fillRect($3, $5, $7, $9);
+	}
+	;
+
+func_bl_drawRect
+	: __FUNC_BL_DRAWRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		bl_drawRect($3, $5, $7, $9);
+	}
+	;
+
+func_bl_drawLine
+	: __FUNC_BL_DRAWLINE __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		bl_drawLine($3, $5, $7, $9);
+	}
+	;
+
+func_bl_rnd
+	: __FUNC_BL_RND __LB expression __RB __DECL_END {
+		$$ = bl_rnd($3);
+	}
+	;
+
+func_bl_wait
+	: __FUNC_BL_WAIT __LB expression __RB __DECL_END {
+		bl_wait($3);
+	}
+	;
+
+func_bl_color
+	: __FUNC_BL_COLOR __LB expression __CAMMA expression __RB __DECL_END {
+		bl_color($3, $5);
+	}
+	;
+
+func_bl_locate
+	: __FUNC_BL_LOCATE __LB expression __CAMMA expression __RB __DECL_END {
+		bl_locate($3, $5);
+	}
+	;
+
+func_bl_getPix
+	: __FUNC_BL_GETPIX __LB expression __CAMMA expression __RB __DECL_END {
+		$$ = bl_getPix($3, $5);
+	}
+	;
+
+func_bl_waitNF
+	: __FUNC_BL_WAITNF __LB expression __RB __DECL_END {
+		bl_waitNF($3);
+	}
+	;
+
+func_bl_inkey1
+	: __FUNC_BL_INKEY1 __LB expression __RB __DECL_END {
+		$$ = bl_inkey1($3);
+	}
+	;
+
+func_bl_cls
+	: __FUNC_BL_CLS __LB expression __RB __DECL_END {
+		bl_cls();
+	}
+	;
+
+func_bl_inptInt
+	: __FUNC_BL_INPTINT __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_inptFlot
+	: __FUNC_BL_INPTFLOT __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_setMode
+	: __FUNC_BL_SETMODE __LB expression __RB __DECL_END {
+		bl_setMode($3);
+	}
+	;
+
+func_bl_fillOval
+	: __FUNC_BL_FILLOVAL __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END {
+		bl_fillOval($3, $5, $7, $9);
+	}
+	;
+
+func_bl_drawStr
+	: __FUNC_BL_DRAWSTR __LB expression __RB __DECL_END {
+		/* undefined */
+	}
+	;
+
+func_bl_openVWin
+	: __FUNC_BL_OPENVWIN __LB expression __CAMMA expression __CAMMA expression __RB __DECL_END
+	{
+		bl_openVWin($3, $5, $7);
+	}
+	;
+
+func_bl_slctWin
+	: __FUNC_BL_SLCTWIN __LB expression __RB __DECL_END {
+		bl_slctWin($3);
+	}
+	;
+
+func_bl_copyRct0
+	: __FUNC_BL_COPYRCT0 __LB 
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __RB __DECL_END
+	{
+		bl_copyRct0($3, $5, $7, $9, $11, $13, $15, $17);
+	}
+	;
+
+func_bl_copyRct1
+	: __FUNC_BL_COPYRCT1 __LB 
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
+		expression __RB __DECL_END
+	{
+		bl_copyRct1($3, $5, $7, $9, $11, $13, $15, $17, $19);
+	}
+	;
+
+func_bl_drawPtrn_d
+	: __FUNC_BL_DRAWPTRN_D __LB
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
+		expression __CAMMA expression __RB __DECL_END
+	{
+		/* undefined */
+	}
+	;
+
+func_bl_drawPtrn_r
+	: __FUNC_BL_DRAWPTRN_R __LB
+		expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
+		expression __CAMMA expression __RB __DECL_END
+	{
+		/* undefined */
+	}
+	;
 
 assignment
         : declarator __OPE_SUBST initializer {
@@ -335,5 +623,4 @@ jump
 
 void init_func_all(void)
 {
-        __init_func_putpixel();
 }

@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <math.h>
+#include <blike.h>
 
 #include "mem.h"
 #include "jmptbl.h"
@@ -12,25 +8,25 @@
 extern FILE* yyin;
 extern FILE* yyout;
 
-int main(int argc, char** argv)
+blMain()
 {
-        if (argc == 1) {
+        if (bl_argc == 1) {
                 print_usage();
-                exit(1);
+                return 1;
         }
 
-        yyin = fopen(argv[1], "rt");
+        yyin = fopen(bl_argv[1], "rt");
         if (yyin == NULL) {
-                print_file_open_err(argv[1]);
+                print_file_open_err(bl_argv[1]);
                 print_usage();
-                exit(1);
+                return 1;
         }
 
         yyout = fopen("/dev/null", "w");
         if (yyout == NULL) {
                 print_file_open_err("/dev/null");
                 print_usage();
-                exit(1);
+                return 1;
         }
 
         mem_init();
@@ -53,3 +49,4 @@ int main(int argc, char** argv)
         jmptbl_close();
         return 0;
 }
+

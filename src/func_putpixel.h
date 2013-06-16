@@ -21,6 +21,5 @@
 
 void __func_putpixel(const double x, const double y,
                      const double H, const double S, const double V);
-void __init_func_putpixel(void);
 
 #endif /* __FUNC_PUTPIXEL_H__ */

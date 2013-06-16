@@ -8,5 +8,6 @@ memcalc_SOURCES = main.c                                \
 
 LFLAGS = -Cf -8
 YFLAGS = -dv
-CFLAGS = -g
-LIBS = -lm -lfl
+CFLAGS = `pkg-config blike --cflags` -g
+LIBS = `pkg-config blike --libs` -lm -lfl
+
