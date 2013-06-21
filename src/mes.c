@@ -24,6 +24,8 @@ void print_usage(void)
         printf("使用法: %s [入力ファイル]\n"
                "\n"
                "%s version %s\n"
+               "Copyright(C) 2012 Takeutch Kemeco\n"
+               "GNU General Public License version 2\n"
                "\n"
                "repository: <https://github.com/takeutch-kemeco/memcalc>\n"
                "bug report: <%s>\n",
