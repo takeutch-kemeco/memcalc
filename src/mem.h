@@ -18,6 +18,7 @@
 
 #include <stdbool.h>
 #include <sys/types.h>
+#include "complex.h"
 
 #ifndef __MEM_H__
 #define __MEM_H__
@@ -32,6 +33,6 @@ void mem_init(void);
 void mem_close(void);
 
 struct MemTag* read_num_var_memtag(const char* name, const size_t index);
-double read_num_var_value(const char* name, const size_t index);
+struct Complex read_num_var_value(const char* name, const size_t index);
 
 #endif /* __MEM_H__ */

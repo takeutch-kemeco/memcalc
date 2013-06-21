@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include "mem.h"
+#include "complex.h"
 
 #define POOL_MAX 0x1000000
 static u_char* pool;
@@ -131,9 +132,9 @@ struct MemTag* read_num_var_memtag(const char* name, const size_t index)
 
         if (p == NULL) {
                 if (index == 0)
-                        push_var(name, sizeof(double));
+                        push_var(name, sizeof(struct Complex));
                 else
-                        push_var(name, sizeof(double) * index);
+                        push_var(name, sizeof(struct Complex) * index);
 
                 p = get_ptr_var(name);
         }
@@ -142,10 +143,10 @@ struct MemTag* read_num_var_memtag(const char* name, const size_t index)
         return p;
 }
 
-double read_num_var_value(const char* name, const size_t index)
+struct Complex read_num_var_value(const char* name, const size_t index)
 {
         struct MemTag* p = read_num_var_memtag(name, index);
 
-        double* tmp = (double*)(p->address);
+        struct Complex* tmp = (struct Complex*)(p->address);
         return tmp[p->index];
 }

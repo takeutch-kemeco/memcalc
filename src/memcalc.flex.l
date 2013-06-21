@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include "mem.h"
 #include "jmptbl.h"
 #include "memcalc.bison.h"
@@ -38,9 +39,8 @@ int skip_declaration_block_depth;
 
 %%
 
-<create_jmptbl>[_a-zA-Z][_0-9a-zA-Z]*[:] {
-        char* tmp = yytext;
-        tmp[yyleng - 1] = '\0';
+<create_jmptbl>[:][_a-zA-Z][_0-9a-zA-Z]* {
+        char* tmp = yytext + 1;
 
         create_jmptbl_ccount += yyleng;
         jmptbl_add(tmp, create_jmptbl_ccount);
@@ -79,32 +79,32 @@ int skip_declaration_block_depth;
 }
 
 <main_process_char>[\\][n] {
-        yylval.val = '\n';
+        yylval.realval = '\n';
         return(__CONST_FLOAT);
 }
 
 <main_process_char>[\\][0] {
-        yylval.val = '\0';
+        yylval.realval = '\0';
         return(__CONST_FLOAT);
 }
 
 <main_process_char>[\\][\\] {
-        yylval.val = '\\';
+        yylval.realval = '\\';
         return(__CONST_FLOAT);
 }
 
 <main_process_char>[\\]['] {
-        yylval.val = '\'';
+        yylval.realval = '\'';
         return(__CONST_FLOAT);
 }
 
 <main_process_char>[\\]["] {
-        yylval.val = '\"';
+        yylval.realval = '\"';
         return(__CONST_FLOAT);
 }
 
 <main_process_char>. {
-        yylval.val = yytext[0];
+        yylval.realval = yytext[0];
         return(__CONST_FLOAT);
 }
 
@@ -114,14 +114,22 @@ int skip_declaration_block_depth;
 }
 
 <main_process>[0-9]+[.]?[0-9]* {
-        yylval.val = atof(yytext);
+        yylval.realval = atof(yytext);
         return(__CONST_FLOAT);
 }
 
 <main_process>[0][.][0-9]* {
-        yylval.val = atof(yytext);
+        yylval.realval = atof(yytext);
         return(__CONST_FLOAT);
 }
+
+<main_process>":+"      return(__OPE_COMPLEX);
+<main_process>":<"      return(__OPE_COMPLEX_POLAR);
+<main_process>"Re"      return(__OPE_REAL_PART);
+<main_process>"Im"      return(__OPE_IMAGINARY_PART);
+<main_process>"~"       return(__OPE_CONJUGATE);
+<main_process>"|"       return(__OPE_ABSOLUTE);
+<main_process>"arg"     return(__OPE_ARGUMENT);
 
 <main_process>"+"       return(__OPE_ADD);
 <main_process>"-"       return(__OPE_SUB);
@@ -132,13 +140,13 @@ int skip_declaration_block_depth;
 <main_process>"<<"      return(__OPE_LSHIFT);
 <main_process>">>"      return(__OPE_RSHIFT);
 
-<main_process>"|"       return(__OPE_OR);
-<main_process>"&"       return(__OPE_AND);
-<main_process>"^"       return(__OPE_XOR);
-<main_process>"~"       return(__OPE_NOT);
+<main_process>"or"      return(__OPE_OR);
+<main_process>"and"     return(__OPE_AND);
+<main_process>"xor"     return(__OPE_XOR);
+<main_process>"not"     return(__OPE_NOT);
 
 <main_process>"=="      return(__OPE_COMPARISON);
-<main_process>"!="      return(__OPE_NOT_COMPARISON);
+<main_process>"/="      return(__OPE_NOT_COMPARISON);
 <main_process>"<"       return(__OPE_ISSMALL);
 <main_process>"<="      return(__OPE_ISSMALL_COMP);
 <main_process>">"       return(__OPE_ISLARGE);
@@ -167,51 +175,51 @@ int skip_declaration_block_depth;
 <main_process>"putpixel"        return(__FUNC_PUTPIXEL);
 <main_process>"putchar"         return(__FUNC_PUTCHAR);
 
-<main_process>"bl_putc"		return(__FUNC_BL_PUTC);
-<main_process>"bl_puts1"	return(__FUNC_BL_PUTS1);
-<main_process>"bl_printf"	return(__FUNC_BL_PRINTF);
-<main_process>"bl_scanf"	return(__FUNC_BL_SCANF);
-<main_process>"bl_malloc"	return(__FUNC_BL_MALLOC);
-<main_process>"bl_rand"		return(__FUNC_BL_RAND);
-<main_process>"bl_srand"	return(__FUNC_BL_SRAND);
-<main_process>"bl_gets"		return(__FUNC_BL_GETS);
-<main_process>"bl_openWin"	return(__FUNC_BL_OPENWIN);
-<main_process>"bl_setCol"	return(__FUNC_BL_SETCOL);
-<main_process>"bl_setBCol"	return(__FUNC_BL_SETBCOL);
-<main_process>"bl_rgb"		return(__FUNC_BL_RGB);
-<main_process>"bl_iCol"		return(__FUNC_BL_ICOL);
-<main_process>"bl_flshWin"	return(__FUNC_BL_FLSHWIN);
-<main_process>"bl_getGrpB"	return(__FUNC_BL_GETGRPB);
-<main_process>"bl_setPix"	return(__FUNC_BL_SETPIX);
-<main_process>"bl_fillRect"	return(__FUNC_BL_FILLRECT);
-<main_process>"bl_drawRect"	return(__FUNC_BL_DRAWRECT);
-<main_process>"bl_drawLine"	return(__FUNC_BL_DRAWLINE);
-<main_process>"bl_rnd"		return(__FUNC_BL_RND);
-<main_process>"bl_wait"		return(__FUNC_BL_WAIT);
-<main_process>"bl_color"	return(__FUNC_BL_COLOR);
-<main_process>"bl_locate"	return(__FUNC_BL_LOCATE);
-<main_process>"bl_getPix"	return(__FUNC_BL_GETPIX);
-<main_process>"bl_waitNF"	return(__FUNC_BL_WAITNF);
-<main_process>"bl_inkey1"	return(__FUNC_BL_INKEY1);
-<main_process>"bl_cls"		return(__FUNC_BL_CLS);
-<main_process>"bl_inptInt"	return(__FUNC_BL_INPTINT);
-<main_process>"bl_inptFlot"	return(__FUNC_BL_INPTFLOT);
-<main_process>"bl_setMode"	return(__FUNC_BL_SETMODE);
-<main_process>"bl_fillOval"	return(__FUNC_BL_FILLOVAL);
-<main_process>"bl_drawStr"	return( __FUNC_BL_DRAWSTR);
-<main_process>"bl_openVWin"	return(__FUNC_BL_OPENVWIN);
-<main_process>"bl_slctWin"	return(__FUNC_BL_SLCTWIN);
-<main_process>"bl_copyRct0"	return(__FUNC_BL_COPYRCT0);
-<main_process>"bl_copyRct1"	return(__FUNC_BL_COPYRCT1);
-<main_process>"bl_drawPtrn_d"	return(__FUNC_BL_DRAWPTRN_D);
-<main_process>"bl_drawPtrn_r"	return(__FUNC_BL_DRAWPTRN_R);
+<main_process>"bl_putc"         return(__FUNC_BL_PUTC);
+<main_process>"bl_puts1"        return(__FUNC_BL_PUTS1);
+<main_process>"bl_printf"       return(__FUNC_BL_PRINTF);
+<main_process>"bl_scanf"        return(__FUNC_BL_SCANF);
+<main_process>"bl_malloc"       return(__FUNC_BL_MALLOC);
+<main_process>"bl_rand"         return(__FUNC_BL_RAND);
+<main_process>"bl_srand"        return(__FUNC_BL_SRAND);
+<main_process>"bl_gets"         return(__FUNC_BL_GETS);
+<main_process>"bl_openWin"      return(__FUNC_BL_OPENWIN);
+<main_process>"bl_setCol"       return(__FUNC_BL_SETCOL);
+<main_process>"bl_setBCol"      return(__FUNC_BL_SETBCOL);
+<main_process>"bl_rgb"          return(__FUNC_BL_RGB);
+<main_process>"bl_iCol"         return(__FUNC_BL_ICOL);
+<main_process>"bl_flshWin"      return(__FUNC_BL_FLSHWIN);
+<main_process>"bl_getGrpB"      return(__FUNC_BL_GETGRPB);
+<main_process>"bl_setPix"       return(__FUNC_BL_SETPIX);
+<main_process>"bl_fillRect"     return(__FUNC_BL_FILLRECT);
+<main_process>"bl_drawRect"     return(__FUNC_BL_DRAWRECT);
+<main_process>"bl_drawLine"     return(__FUNC_BL_DRAWLINE);
+<main_process>"bl_rnd"          return(__FUNC_BL_RND);
+<main_process>"bl_wait"         return(__FUNC_BL_WAIT);
+<main_process>"bl_color"        return(__FUNC_BL_COLOR);
+<main_process>"bl_locate"       return(__FUNC_BL_LOCATE);
+<main_process>"bl_getPix"       return(__FUNC_BL_GETPIX);
+<main_process>"bl_waitNF"       return(__FUNC_BL_WAITNF);
+<main_process>"bl_inkey1"       return(__FUNC_BL_INKEY1);
+<main_process>"bl_cls"          return(__FUNC_BL_CLS);
+<main_process>"bl_inptInt"      return(__FUNC_BL_INPTINT);
+<main_process>"bl_inptFlot"     return(__FUNC_BL_INPTFLOT);
+<main_process>"bl_setMode"      return(__FUNC_BL_SETMODE);
+<main_process>"bl_fillOval"     return(__FUNC_BL_FILLOVAL);
+<main_process>"bl_drawStr"      return( __FUNC_BL_DRAWSTR);
+<main_process>"bl_openVWin"     return(__FUNC_BL_OPENVWIN);
+<main_process>"bl_slctWin"      return(__FUNC_BL_SLCTWIN);
+<main_process>"bl_copyRct0"     return(__FUNC_BL_COPYRCT0);
+<main_process>"bl_copyRct1"     return(__FUNC_BL_COPYRCT1);
+<main_process>"bl_drawPtrn_d"   return(__FUNC_BL_DRAWPTRN_D);
+<main_process>"bl_drawPtrn_r"   return(__FUNC_BL_DRAWPTRN_R);
 
 <main_process>[_a-zA-Z][_0-9a-zA-Z]* {
         strcpy(yylval.identifier, yytext);
         return(__IDENTIFIER);
 }
 
-<main_process>[_a-zA-Z][_0-9a-zA-Z]*[:] {
+<main_process>[:][_a-zA-Z][_0-9a-zA-Z]* {
 }
 
 <main_process><<EOF>>   return(__EOF);
