@@ -22,7 +22,7 @@
 
 struct Complex complex_constructor(const double re, const double im)
 {
-        struct Complex a = {.re = re, .im = im};
+        const struct Complex a = {.re = re, .im = im};
 
         return a;
 }
@@ -243,4 +243,19 @@ struct Complex complex_abs(const struct Complex a)
         const double z = sqrt(re * re + im * im);
 
         return complex_constructor(z, 0);
+}
+
+struct Complex complex_pow(const struct Complex a, const struct Complex b)
+{
+        const double x = complex_realpart(a);
+        const double y = complex_imagpart(a);
+        const double m = complex_realpart(b);
+        const double n = complex_imagpart(b);
+
+        const double t = atan2(y, x);
+        const double p = x * x + y * y;
+        const double r = pow(p, m/2) * exp(-n * t);
+        const double i = ((log(p) * n) / 2) + m * t;
+
+        return complex_constructor(r * cos(i), r * sin(i));
 }

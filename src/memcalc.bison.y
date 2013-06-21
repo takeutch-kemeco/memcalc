@@ -92,7 +92,7 @@ void jump_run(long fpos)
 %left __OPE_MUL __OPE_DIV __OPE_MOD
 %left __OPE_COMPLEX __OPE_COMPLEX_POLAR
 %left __OPE_PLUS __OPE_MINUS
-%left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT
+%left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
 %type <realval> __CONST_FLOAT
 %type <compval> expression initializer function read_variable
@@ -563,6 +563,10 @@ expression
 
         | expression __OPE_DIV expression {
                 $$ = complex_div($1, $3);
+        }
+
+        | expression __OPE_POWER expression {
+                $$ = complex_pow($1, $3);
         }
 
         | expression __OPE_MOD expression {

@@ -54,5 +54,6 @@ struct Complex complex_is_large(const struct Complex a, const struct Complex b);
 struct Complex complex_is_small_comp(const struct Complex a, const struct Complex b);
 struct Complex complex_is_large_comp(const struct Complex a, const struct Complex b);
 struct Complex complex_abs(const struct Complex a);
+struct Complex complex_pow(const struct Complex a, const struct Complex b);
 
 #endif /* __COMPLEX_H__ */

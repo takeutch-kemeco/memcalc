@@ -130,6 +130,7 @@ int skip_declaration_block_depth;
 <main_process>"~"       return(__OPE_CONJUGATE);
 <main_process>"|"       return(__OPE_ABSOLUTE);
 <main_process>"arg"     return(__OPE_ARGUMENT);
+<main_process>"^"       return(__OPE_POWER);
 
 <main_process>"+"       return(__OPE_ADD);
 <main_process>"-"       return(__OPE_SUB);
