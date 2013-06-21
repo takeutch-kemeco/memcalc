@@ -16,11 +16,10 @@ s[12] = '\n';
 s[13] = '\0';
 
 i = 0;
-L:
-if (s[i] != '\0') {
-	putchar(s[i]);
+:L
+        if (s[i] /= '\0') {
+                putchar(s[i]);
 
-	i = i + 1;
-	goto L;
-}
-
+                i = i + 1;
+                goto L;
+        }

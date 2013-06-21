@@ -1,4 +1,4 @@
-start:
+:start
 a = a + 1;
 print(a);
-goto start;
+if a < 100000 {goto start;}

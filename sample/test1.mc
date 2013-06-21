@@ -1,7 +1,7 @@
-a = 11;
+a = 1:+2;
 print(a);
 
-b = 2;
+b = 3:+4;
 print(b);
 
 c = a + b;
@@ -17,6 +17,9 @@ c = a / b;
 print(c);
 
 c = a % b;
+print(c);
+
+c = a ^ b;
 print(c);
 
 c = a << b;

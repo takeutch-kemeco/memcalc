@@ -11,19 +11,18 @@ c[6] = bl_rgb(0, 255, 255);
 c[7] = bl_rgb(255, 255, 255);
 
 i = 1;
-L0:
-	bl_setCol(c[i]);
-	x = 0;
-	L1:
-		bl_fillRect(1, 200, x, 0);
-		bl_fillRect(1, 200, 319 - x, 0);
-		bl_wait(30);
+:L0
+        bl_setCol(c[i]);
+        x = 0;
+        :L1
+                bl_fillRect(1, 200, x, 0);
+                bl_fillRect(1, 200, 319 - x, 0);
+                bl_wait(30);
 
-		if (x < 320) {
-			x = x + 2;
-			goto L1;
-		}
+                if (x < 320) {
+                        x = x + 2;
+                        goto L1;
+                }
 
-	i = (i + 1) & 7;
-	goto L0;
-
+        i = (i + 1) and 7;
+        goto L0;

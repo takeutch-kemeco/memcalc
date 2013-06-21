@@ -1,6 +1,6 @@
 goto MAIN;
 
-F:
+:F
         if (i) {
                 a = 5;
                 print(a);
@@ -11,10 +11,10 @@ F:
 
         goto _F;
 
-MAIN:
+:MAIN
         i = 0;
-        LOOP_START:
-        goto F;
-        _F:
-        i = i + 1;
-        if (i < 2) {goto LOOP_START;}
+        :LOOP_START
+                goto F;
+                :_F
+                i = i + 1;
+                if (i < 2) {goto LOOP_START;}

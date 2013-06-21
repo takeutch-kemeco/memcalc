@@ -4,14 +4,14 @@ print(a);
 b = 15;
 print(b);
 
-c = a | b;
+c = a or b;
 print(c);
 
-c = a & b;
+c = a and b;
 print(c);
 
-c = a ^ b;
+c = a xor b;
 print(c);
 
-c = ~a;
+c = not a;
 print(c);

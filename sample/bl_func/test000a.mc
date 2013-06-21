@@ -15,13 +15,12 @@ a[11] = 'd';
 a[12] = '\n';
 
 i = 0;
-L0:
-	bl_putc(a[i]);
+:L0
+        bl_putc(a[i]);
 
-	if (i < 13) {
-		i = i + 1;
-		goto L0;
-	}
+        if (i < 13) {
+                i = i + 1;
+                goto L0;
+        }
 
 bl_wait(-1);
-
