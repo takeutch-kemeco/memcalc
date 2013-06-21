@@ -25,7 +25,7 @@ void print_usage(void)
                "\n"
                "%s version %s\n"
                "\n"
-               "repository: <http://sourceforge.jp/users/kemeco/pf/memcalc/scm/>.\n"
+               "repository: <https://github.com/takeutch-kemeco/memcalc>\n"
                "bug report: <%s>\n",
                PACKAGE_NAME,
                PACKAGE_NAME, VERSION,
@@ -36,3 +36,4 @@ void print_file_open_err(char* s)
 {
         printf("ファイル %s のオープンでエラーが発生しました。中止します。\n", s);
 }
+

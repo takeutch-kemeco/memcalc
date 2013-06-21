@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
-AC_INIT([memcalc], [0.1.0], [takeutchkemeco@gmail.com])
+AC_PREREQ([2.69])
+AC_INIT([memcalc], [0.1.1], [takeutchkemeco@gmail.com])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/mem.c])
 AC_CONFIG_HEADERS([src/config.h])
