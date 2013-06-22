@@ -394,7 +394,7 @@ func_bl_inkey1
         ;
 
 func_bl_cls
-        : __FUNC_BL_CLS __LB expression __RB {
+        : __FUNC_BL_CLS __LB __RB {
                 bl_cls();
         }
         ;
