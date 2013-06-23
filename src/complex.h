@@ -24,6 +24,14 @@ struct Complex {
         double im;
 };
 
+typedef struct Complex (*ComplexComparisonFunc)(const struct Complex a, const struct Complex b);
+
+struct Comparison {
+        struct Complex retval;
+        struct Complex expval;
+        ComplexComparisonFunc f;
+};
+
 struct Complex complex_constructor(const double re, const double im);
 double complex_realpart(const struct Complex a);
 double complex_imagpart(const struct Complex a);

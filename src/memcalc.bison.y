@@ -57,6 +57,7 @@ void jump_run(long fpos)
         char identifier[0x100];
         struct MemTag* memtag;
         uint32_t icf;
+        struct Comparison comparisonval;
 }
 
 %token __FUNC_BL_PUTC __FUNC_BL_PUTS1 __FUNC_BL_PRINTF __FUNC_BL_SCANF __FUNC_BL_MALLOC __FUNC_BL_RAND __FUNC_BL_SRAND __FUNC_BL_GETS __FUNC_BL_OPENWIN __FUNC_BL_SETCOL __FUNC_BL_SETBCOL __FUNC_BL_RGB __FUNC_BL_ICOL __FUNC_BL_FLSHWIN __FUNC_BL_GETGRPB __FUNC_BL_SETPIX __FUNC_BL_FILLRECT __FUNC_BL_DRAWRECT __FUNC_BL_DRAWLINE __FUNC_BL_RND __FUNC_BL_WAIT __FUNC_BL_COLOR __FUNC_BL_LOCATE __FUNC_BL_GETPIX __FUNC_BL_WAITNF __FUNC_BL_INKEY1 __FUNC_BL_CLS __FUNC_BL_INPTINT __FUNC_BL_INPTFLOT __FUNC_BL_SETMODE __FUNC_BL_FILLOVAL __FUNC_BL_DRAWSTR __FUNC_BL_OPENVWIN __FUNC_BL_SLCTWIN __FUNC_BL_COPYRCT0 __FUNC_BL_COPYRCT1 __FUNC_BL_DRAWPTRN_D __FUNC_BL_DRAWPTRN_R
@@ -95,7 +96,8 @@ void jump_run(long fpos)
 %left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
 %type <realval> __CONST_FLOAT
-%type <compval> expression initializer function read_variable assignment
+%type <compval> expression initializer function read_variable assignment comparison
+%type <comparisonval> comparison_unit
 %type <compval> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
 %type <icf> if_conditional
 %type <identifier> __IDENTIFIER
@@ -613,28 +615,59 @@ expression
                 $$ = $2;
         }
 
-        | expression __OPE_COMPARISON expression {
-                $$ = complex_comparison($1, $3);
+        | comparison {
+                $$ = $1;
+        }
+        ;
+
+comparison
+        : expression comparison_unit {
+                $$ = complex_and($2.f($1, $2.expval), $2.retval);
+        }
+        ;
+
+comparison_unit
+        : comparison_unit comparison_unit {
+                const struct Complex tmp = $2.f($1.expval, $2.expval);
+                $$.retval = complex_and(complex_and(tmp, $2.retval), $1.retval);
+                $$.f = $1.f;
+                $$.expval = $1.expval;
         }
 
-        | expression __OPE_NOT_COMPARISON expression {
-                $$ = complex_not_comparison($1, $3);
+        | __OPE_COMPARISON expression {
+                $$.f = complex_comparison;
+                $$.expval = $2;
+                $$.retval = complex_constructor(1, 0);
         }
 
-        | expression __OPE_ISSMALL expression {
-                $$ = complex_is_small($1, $3);
+        | __OPE_NOT_COMPARISON expression {
+                $$.f = complex_not_comparison;
+                $$.expval = $2;
+                $$.retval = complex_constructor(1, 0);
         }
 
-        | expression __OPE_ISSMALL_COMP expression {
-                $$ = complex_is_small_comp($1, $3);
+        | __OPE_ISSMALL expression {
+                $$.f = complex_is_small;
+                $$.expval = $2;
+                $$.retval = complex_constructor(1, 0);
         }
 
-        | expression __OPE_ISLARGE expression {
-                $$ = complex_is_large($1, $3);
+        | __OPE_ISSMALL_COMP expression {
+                $$.f = complex_is_small_comp;
+                $$.expval = $2;
+                $$.retval = complex_constructor(1, 0);
         }
 
-        | expression __OPE_ISLARGE_COMP expression {
-                $$ = complex_is_large_comp($1, $3);
+        | __OPE_ISLARGE expression {
+                $$.f = complex_is_large;
+                $$.expval = $2;
+                $$.retval = complex_constructor(1, 0);
+        }
+
+        | __OPE_ISLARGE_COMP expression {
+                $$.f = complex_is_large_comp;
+                $$.expval = $2;
+                $$.retval = complex_constructor(1, 0);
         }
         ;
 
