@@ -95,7 +95,7 @@ void jump_run(long fpos)
 %left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
 %type <realval> __CONST_FLOAT
-%type <compval> expression initializer function read_variable
+%type <compval> expression initializer function read_variable assignment
 %type <compval> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
 %type <icf> if_conditional
 %type <identifier> __IDENTIFIER
@@ -491,6 +491,7 @@ assignment
         : declarator __OPE_SUBST initializer {
                 struct Complex* tmp = (struct Complex*)($1->address);
                 tmp[$1->index] = $3;
+                $$ = $3;
         }
         ;
 
@@ -504,7 +505,10 @@ declarator
         ;
 
 initializer
-        : expression {
+        : assignment {
+                $$ = $1;
+        }
+        | expression {
                 $$ = $1;
         }
         | function {
