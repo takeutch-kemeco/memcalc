@@ -2,6 +2,7 @@
 
 #include "mem.h"
 #include "jmptbl.h"
+#include "pc.h"
 
 #include "func_putpixel.h"
 
@@ -31,6 +32,7 @@ blMain()
 
         mem_init();
         jmptbl_init();
+        pc_init();
 
         start_create_jmptbl();
         while (yylex() != 0) {
@@ -45,6 +47,7 @@ blMain()
 
         mem_close();
         jmptbl_close();
+        pc_close();
         return 0;
 }
 

@@ -28,6 +28,7 @@
 #include "mem.h"
 #include "complex.h"
 #include "jmptbl.h"
+#include "pc.h"
 
 #include "func_putpixel.h"
 
@@ -41,7 +42,12 @@ void yyerror(const char *s)
 extern FILE* yyin;
 extern FILE* yyout;
 
-void jump_run(long fpos)
+extern int yycurline;
+
+extern int yycurbyte;
+extern int yynextbyte;
+
+void jump_run(uint32_t fpos)
 {
         if (fpos != -1) {
                 fseek(yyin, fpos, SEEK_SET);
@@ -52,6 +58,7 @@ void jump_run(long fpos)
 %}
 
 %union {
+        fpos_t fpos;
         double realval;
         struct Complex compval;
         char identifier[0x100];
@@ -64,7 +71,7 @@ void jump_run(long fpos)
 
 %token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
-%token __STATE_GOTO
+%token __STATE_GOTO __STATE_GOSUB __STATE_RETURN
 %token __CONST_FLOAT
 %token __OPE_PLUS __OPE_MINUS
 %token __OPE_MUL __OPE_DIV __OPE_MOD
@@ -94,6 +101,7 @@ void jump_run(long fpos)
 %left __OPE_PLUS __OPE_MINUS
 %left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
+%type <fpos> __DECL_END;
 %type <realval> __CONST_FLOAT
 %type <compval> expression initializer function read_variable assignment comparison
 %type <comparisonval> comparison_unit
@@ -702,13 +710,34 @@ selection
 
 jump
         : __STATE_GOTO __IDENTIFIER __DECL_END {
-                u_long fpos = jmptbl_seek($2);
+                uint32_t fpos = jmptbl_seek($2);
                 if (fpos == -1) {
-                        printf("\n%s\n構文エラー : 存在しないラベルをジャンプ先に指定しました\n\n", $2);
+                        printf("\n構文エラー : goto で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
                         exit(1);
                 }
 
                 jump_run(fpos);
+                yycurbyte = yynextbyte = fpos;
+        }
+
+        | __STATE_GOSUB __IDENTIFIER __DECL_END {
+                uint32_t fpos = jmptbl_seek($2);
+                if (fpos == -1) {
+                        printf("\n構文エラー : gosub で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
+                        exit(1);
+                }
+
+                pc_push(yycurbyte);
+
+                jump_run(fpos);
+                yycurbyte = yynextbyte = fpos;
+        }
+
+        | __STATE_RETURN __DECL_END {
+                uint32_t fpos = pc_pop();
+
+                jump_run(fpos);
+                yycurbyte = yynextbyte = fpos;
         }
         ;
 
