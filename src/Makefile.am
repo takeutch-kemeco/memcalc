@@ -6,7 +6,8 @@ memcalc_SOURCES = main.c                                \
                   func_putpixel.c func_putpixel.h       \
                   mes.c mes.h				\
                   complex.c complex.h			\
-                  pc.c pc.h
+                  pc.c pc.h				\
+                  stack.c stack.h
 
 LFLAGS = -Cf -8
 YFLAGS = -dv

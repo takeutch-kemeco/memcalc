@@ -1,4 +1,4 @@
-/* pc.c
+/* stack.h
  * Copyright (C) 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
@@ -16,26 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "stack.h"
+#include <stdio.h>
+#include <stdint.h>
 
-static struct Stack* pc_stack;
+#ifndef __STACK_H__
+#define __STACK_H__
 
-void pc_init(void)
-{
-        pc_stack = stack_new();
-}
+struct Stack {
+        size_t len;
+        size_t head;
+        uint64_t* val;
+};
 
-void pc_close(void)
-{
-        stack_close(pc_stack);
-}
+struct Stack* stack_new(void);
+void stack_close(struct Stack* a);
 
-void pc_push(const uint64_t fpos)
-{
-        stack_push(pc_stack, fpos);
-}
+void stack_push(struct Stack* a, const uint64_t val);
+uint64_t stack_pop(struct Stack* a);
 
-uint64_t pc_pop(void)
-{
-        return stack_pop(pc_stack);
-}
+#endif /* __STACK_H__ */
