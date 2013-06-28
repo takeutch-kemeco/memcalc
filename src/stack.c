@@ -171,7 +171,7 @@ void* stack_read(struct Stack* a)
 {
         if (a->head == 0) {
                 printf("err: stack_read(), stack_underflow\n");
-                exit(1);
+                return NULL;
         }
 
         return a->array[a->head - 1];
