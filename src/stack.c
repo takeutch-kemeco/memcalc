@@ -21,8 +21,8 @@
 #include <stdint.h>
 #include "stack.h"
 
-static void* new_array(const size_t array_len,
-                       func_stack_unit_constructor unit_constructor)
+static void** new_array(const size_t array_len,
+                        func_stack_unit_constructor unit_constructor)
 {
         void** a = malloc(sizeof(*a) * array_len);
         if (a == NULL) {
@@ -60,12 +60,12 @@ static int free_array(void** a,
         return 0;
 }
 
-static void* extend_array(void** old_array,
-                          const size_t old_array_len,
-                          const size_t new_array_len,
-                          func_stack_unit_constructor unit_constructor,
-                          func_stack_unit_destructor unit_destructor,
-                          func_stack_unit_copy unit_copy)
+static void** extend_array(void** old_array,
+                           const size_t old_array_len,
+                           const size_t new_array_len,
+                           func_stack_unit_constructor unit_constructor,
+                           func_stack_unit_destructor unit_destructor,
+                           func_stack_unit_copy unit_copy)
 {
         void** dst = new_array(new_array_len, unit_constructor);
         if (dst == NULL) {
@@ -101,7 +101,7 @@ struct Stack* stack_new(func_stack_unit_constructor unit_constructor,
                 return NULL;
         }
 
-        a->len = 0x1;
+        a->len = 0x1000;
         a->head = 0;
         a->unit_size;
         a->unit_constructor = unit_constructor;
@@ -134,7 +134,7 @@ int stack_push(struct Stack* a, void* unit)
 {
         if (a->head >= a->len) {
                 const size_t old_len = a->len;
-                a->len << 1;
+                a->len <<= 1;
 
                 a->array = extend_array(a->array, old_len, a->len,
                                         a->unit_constructor, a->unit_destructor, a->unit_copy);
