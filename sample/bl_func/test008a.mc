@@ -22,12 +22,12 @@ d = 37;
         if (b ==  0) {bb =  1;}
         if (b == 78) {bb = -1;}
         if (c ==  0) {cc =  1;}
-        if (c == 22) and ((d - 1 <= b) and (b <= d + 5)) {cc = -1;}
+        if (c == 22) and (d-1 <= b <= d+5) {cc = -1;}
 
         b = b + bb; c = c + cc;
 
-        if ((a == 333) and (d < 73)) or ((a == '6') and (d < 73)) {d = d + 2;}
-        if ((a == 331) and (d >  1)) or ((a == '4') and (d >  1)) {d = d - 2;}
+        if ((a == 333) or (a == '6')) and (d < 73) {d = d + 2;}
+        if ((a == 331) or (a == '4')) and (d >  1) {d = d - 2;}
 
         goto L0;
 
