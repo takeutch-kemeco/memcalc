@@ -22,16 +22,28 @@
 #ifndef __STACK_H__
 #define __STACK_H__
 
+typedef void* (*func_stack_unit_constructor)(void);
+typedef int (*func_stack_unit_destructor)(void* a);
+typedef int (*func_stack_unit_copy)(void* dst, void* src);
+
 struct Stack {
         size_t len;
         size_t head;
-        uint64_t* val;
+        void** array;
+        size_t unit_size;
+        func_stack_unit_constructor unit_constructor;
+        func_stack_unit_destructor unit_destructor;
+        func_stack_unit_copy unit_copy;
 };
 
-struct Stack* stack_new(void);
-void stack_close(struct Stack* a);
+struct Stack* stack_new(func_stack_unit_constructor unit_constructor,
+                        func_stack_unit_destructor unit_destructor,
+                        func_stack_unit_copy unit_copy);
+int stack_free(struct Stack* a);
 
-void stack_push(struct Stack* a, const uint64_t val);
-uint64_t stack_pop(struct Stack* a);
+int stack_push(struct Stack* a, void* unit);
+void* stack_pop(struct Stack* a);
+
+void* stack_read(struct Stack* a);
 
 #endif /* __STACK_H__ */
