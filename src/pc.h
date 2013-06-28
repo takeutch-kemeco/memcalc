@@ -24,7 +24,7 @@
 
 void pc_init(void);
 void pc_close(void);
-void pc_push(const uint32_t fpos);
-uint32_t pc_pop(void);
+void pc_push(const uint64_t fpos);
+uint64_t pc_pop(void);
 
 #endif /* __PC_H__ */
