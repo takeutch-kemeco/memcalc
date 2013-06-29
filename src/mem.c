@@ -63,8 +63,7 @@ void mem_init(void)
         reflist_head = 0;
 
         mem_stack = stack_new(mem_unit_constructor, mem_unit_destructor, mem_unit_copy);
-        const uint64_t unit = 0;
-        stack_push(mem_stack, (void*)&unit);
+        stack_push(mem_stack, (void*)&reflist_head);
 }
 
 static void* clear_ref(struct REF* a)
