@@ -717,6 +717,7 @@ jump
                 }
 
                 jump_run(fpos);
+                yyclearin;
                 yycurbyte = yynextbyte = fpos;
         }
 
@@ -730,13 +731,15 @@ jump
                 pc_push(yycurbyte);
 
                 jump_run(fpos);
+                yyclearin;
                 yycurbyte = yynextbyte = fpos;
         }
 
         | __STATE_RETURN __DECL_END {
-                uint32_t fpos = pc_pop();
+                const uint64_t fpos = pc_pop();
 
                 jump_run(fpos);
+                yyclearin;
                 yycurbyte = yynextbyte = fpos;
         }
         ;
