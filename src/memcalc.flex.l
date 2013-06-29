@@ -29,6 +29,8 @@ long create_jmptbl_ccount;
 
 int skip_declaration_block_depth;
 
+int skip_lambda_body_block_depth;
+
 int yycurline = 1;
 
 int yycurbyte = 0;
@@ -64,6 +66,7 @@ static void update_line_yycurbyte(void)
 %x main_process_comment
 %x main_process_char
 %x main_process_skip_declaration_block
+%x main_process_skip_lambda_body_block
 
 %%
 
@@ -212,6 +215,8 @@ static void update_line_yycurbyte(void)
 <main_process>"{"       update_return(__BLOCK_BEGIN);
 <main_process>"}"       update_return(__BLOCK_END);
 
+<main_process>[\\]      update_return(__BACKSLASH)
+<main_process>"."       update_return(__COLON);
 <main_process>","       update_return(__CAMMA);
 <main_process>";"       update_return(__DECL_END);
 
@@ -307,6 +312,28 @@ static void update_line_yycurbyte(void)
         update_yycurbyte();
 }
 
+<main_process_skip_lambda_body_block>[(] {
+        update_yycurbyte();
+        skip_lambda_body_block_depth++;
+}
+
+<main_process_skip_lambda_body_block>[)] {
+        update_yycurbyte();
+
+        if (skip_lambda_body_block_depth == 0)
+                BEGIN(main_process);
+        else
+                skip_lambda_body_block_depth--;
+}
+
+<main_process_skip_lambda_body_block>[\n] {
+        update_line_yycurbyte();
+}
+
+<main_process_skip_lambda_body_block>. {
+        update_yycurbyte();
+}
+
 %%
 
 void start_create_jmptbl(void)
@@ -327,4 +354,14 @@ void skip_declaration_block(void)
                 skip_declaration_block_depth = 0;
 
         BEGIN(main_process_skip_declaration_block);
+}
+
+void skip_lambda_body_block(void)
+{
+        if (strcmp(yytext, "(") == 0)
+                skip_lambda_body_block_depth = 1;
+        else
+                skip_lambda_body_block_depth = 0;
+
+        BEGIN(main_process_skip_lambda_body_block);
 }
