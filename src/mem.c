@@ -19,14 +19,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdbool.h>
-#include <sys/types.h>
 #include "mem.h"
 #include "complex.h"
 #include "stack.h"
 
 #define POOL_MAX 0x1000000
-static u_char* pool;
+static void* pool;
 
 struct REF {
         char* name;
@@ -90,18 +91,31 @@ void mem_close(void)
         stack_free(mem_stack);
 }
 
+static struct REF* seek_reflist_next_head(void)
+{
+        return reflist + reflist_head;
+}
+
+static struct REF* seek_reflist_cur_head(void)
+{
+        if (reflist_head)
+                return reflist + reflist_head - 1;
+
+        return NULL;
+}
+
 static void* seek_poolhead(void)
 {
-        if (reflist_head == 0)
-                return &pool[0];
+        struct REF* p = seek_reflist_cur_head();
+        if (p == NULL)
+                return pool;
 
-        struct REF* p = reflist + reflist_head - 1;
         return p->tag.address + p->tag.bytesize;
 }
 
 static void push_var(const char* name, const size_t bytesize)
 {
-        struct REF* p = reflist + reflist_head;
+        struct REF* p = seek_reflist_next_head();
 
         clear_ref(p);
 
@@ -114,21 +128,13 @@ static void push_var(const char* name, const size_t bytesize)
         reflist_head++;
 }
 
-static void pop_var(void)
-{
-        if (reflist_head == 0) {
-                printf("system error: pop_var()\n");
-                return;
-        }
-
-        reflist_head--;
-}
-
 static struct REF* search_ref(const char* name)
 {
         const size_t name_len = strlen(name);
 
-        struct REF* p = reflist + reflist_head - 1;
+        struct REF* p = seek_reflist_cur_head();
+        if (p == NULL)
+                return NULL;
 
         int i;
         for (i = 0; i < reflist_head; i++) {
@@ -146,7 +152,7 @@ static struct REF* search_overlide_ref(const char* name)
 {
         const size_t name_len = strlen(name);
 
-        struct REF* p = reflist + reflist_head - 1;
+        struct REF* p = seek_reflist_cur_head();
 
         const uint64_t reflist_overlide_botom = *((uint64_t*)stack_read(mem_stack));
 
@@ -171,24 +177,27 @@ static struct MemTag* get_ptr_var(const char* name)
         return &(p->tag);
 }
 
-static struct MemTag* get_overlide_ptr_var(const char* name)
+bool mem_create_var(const char* name, const size_t index_len)
 {
-        struct REF* p = search_overlide_ref(name);
-        if (p == NULL)
-                return NULL;
+        if (search_overlide_ref(name) != NULL)
+                return false;
 
-        return &(p->tag);
+        if (index_len == 0)
+                push_var(name, sizeof(struct Complex));
+        else
+                push_var(name, sizeof(struct Complex) * index_len);
+
+        return true;
 }
 
-struct MemTag* read_num_var_memtag(const char* name, const size_t index)
+struct MemTag* mem_read_var_memtag(const char* name, const size_t index)
 {
         struct MemTag* p = get_ptr_var(name);
-
         if (p == NULL) {
-                if (index == 0)
-                        push_var(name, sizeof(struct Complex));
-                else
-                        push_var(name, sizeof(struct Complex) * index);
+                if (mem_create_var(name, index) == false) {
+                        printf("err: mem_read_var_memtag(), get_ptr_var() or mem_create_var()\n");
+                        exit(1);
+                }
 
                 p = get_ptr_var(name);
         }
@@ -197,9 +206,9 @@ struct MemTag* read_num_var_memtag(const char* name, const size_t index)
         return p;
 }
 
-struct Complex read_num_var_value(const char* name, const size_t index)
+struct Complex mem_read_var_value(const char* name, const size_t index)
 {
-        struct MemTag* p = read_num_var_memtag(name, index);
+        struct MemTag* p = mem_read_var_memtag(name, index);
 
         struct Complex* tmp = (struct Complex*)(p->address);
         return tmp[p->index];
@@ -213,20 +222,4 @@ void mem_push_overlide(void)
 void mem_pop_overlide(void)
 {
         reflist_head = *((uint64_t*)stack_pop(mem_stack));
-}
-
-void create_overlide_num_var(const char* name, const size_t index)
-{
-        struct MemTag* p = get_overlide_ptr_var(name);
-
-        if (p == NULL) {
-                if (index == 0)
-                        push_var(name, sizeof(struct Complex));
-                else
-                        push_var(name, sizeof(struct Complex) * index);
-
-                p = get_overlide_ptr_var(name);
-        }
-
-        p->index = index;
 }

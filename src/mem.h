@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <stddef.h>
 #include <stdbool.h>
-#include <sys/types.h>
 #include "complex.h"
 
 #ifndef __MEM_H__
@@ -32,12 +32,12 @@ struct MemTag {
 void mem_init(void);
 void mem_close(void);
 
-struct MemTag* read_num_var_memtag(const char* name, const size_t index);
-struct Complex read_num_var_value(const char* name, const size_t index);
+bool mem_create_var(const char* name, const size_t index_len);
+
+struct MemTag* mem_read_var_memtag(const char* name, const size_t index);
+struct Complex mem_read_var_value(const char* name, const size_t index);
 
 void mem_push_overlide(void);
 void mem_pop_overlide(void);
-
-void create_overlide_num_var(const char* name, const size_t index);
 
 #endif /* __MEM_H__ */

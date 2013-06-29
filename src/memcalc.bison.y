@@ -506,10 +506,10 @@ assignment
 
 declarator
         : __IDENTIFIER {
-                $$ = read_num_var_memtag($1, 0);
+                $$ = mem_read_var_memtag($1, 0);
         }
         | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                $$ = read_num_var_memtag($1, (size_t)complex_realpart($3));
+                $$ = mem_read_var_memtag($1, (size_t)complex_realpart($3));
         }
         ;
 
@@ -680,11 +680,11 @@ comparison_unit
 
 read_variable
         : __IDENTIFIER {
-                $$ = read_num_var_value($1, 0);
+                $$ = mem_read_var_value($1, 0);
         }
 
         | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                $$ = read_num_var_value($1, (size_t)complex_realpart($3));
+                $$ = mem_read_var_value($1, (size_t)complex_realpart($3));
         }
         ;
 
