@@ -84,7 +84,7 @@ void jump_run(uint32_t fpos)
 %token __LB __RB
 %token __ARRAY_BEGIN __ARRAY_END
 %token __BLOCK_BEGIN __BLOCK_END
-%token __CAMMA
+%token __CAMMA __COLON __BACKSLASH
 %token __DECL_END
 %token __EOF
 
