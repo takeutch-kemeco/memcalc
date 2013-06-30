@@ -30,7 +30,6 @@ struct Stack {
         size_t len;
         size_t head;
         void** array;
-        size_t unit_size;
         func_stack_unit_constructor unit_constructor;
         func_stack_unit_destructor unit_destructor;
         func_stack_unit_copy unit_copy;

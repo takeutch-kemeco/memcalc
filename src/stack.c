@@ -103,7 +103,6 @@ struct Stack* stack_new(func_stack_unit_constructor unit_constructor,
 
         a->len = 0x100;
         a->head = 0;
-        a->unit_size;
         a->unit_constructor = unit_constructor;
         a->unit_destructor = unit_destructor;
         a->unit_copy = unit_copy;
