@@ -638,14 +638,14 @@ lambda
         ;
 
 lambda_main
-        : lambda_assignment_arg __COLON {yyclearin;} initializer {
-                $$ = $4;
+        : lambda_assignment_arg __COLON initializer {
+                $$ = $3;
 
                 mem_pop_overlide();
 
                 const uint64_t fpos = pc_pop();
-                yyclearin;
                 jump_run(fpos);
+                yyclearin;
                 yycurbyte = yynextbyte = fpos;
         }
         ;
