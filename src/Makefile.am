@@ -7,7 +7,8 @@ memcalc_SOURCES = main.c                                \
                   mes.c mes.h				\
                   complex.c complex.h			\
                   pc.c pc.h				\
-                  stack.c stack.h
+                  stack.c stack.h			\
+                  que.c que.h
 
 LFLAGS = -Cf -8
 YFLAGS = -dv
