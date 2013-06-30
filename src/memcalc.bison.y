@@ -61,7 +61,7 @@ void jump_run(uint32_t fpos)
         fpos_t fpos;
         double realval;
         struct Complex compval;
-        char identifier[0x1000];
+        char identifier[0x80];
         struct MemTag* memtag;
         uint32_t icf;
         struct Comparison comparisonval;
