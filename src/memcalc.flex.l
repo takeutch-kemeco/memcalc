@@ -48,7 +48,7 @@ static void update_yycurbyte(void)
 static void update_line_yycurbyte(void)
 {
         yycurbyte = yynextbyte;
-        yynextbyte += yyleng + 1;
+        yynextbyte += yyleng;
         yycurline++;
 #ifdef DEBUG
         printf("[%s, %d, %d, %d]\n", yytext, yycurline, yycurbyte, yynextbyte);

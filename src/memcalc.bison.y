@@ -61,7 +61,7 @@ void jump_run(uint32_t fpos)
         fpos_t fpos;
         double realval;
         struct Complex compval;
-        char identifier[0x100];
+        char identifier[0x1000];
         struct MemTag* memtag;
         uint32_t icf;
         struct Comparison comparisonval;
@@ -103,11 +103,11 @@ void jump_run(uint32_t fpos)
 
 %type <fpos> __DECL_END;
 %type <realval> __CONST_FLOAT
-%type <compval> expression initializer function read_variable assignment comparison
+%type <compval> expression initializer function read_variable assignment comparison lambda lambda_main
 %type <comparisonval> comparison_unit
 %type <compval> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
 %type <icf> if_conditional
-%type <identifier> __IDENTIFIER
+%type <identifier> __IDENTIFIER lambda_head
 %type <memtag> declarator
 %start translation_unit
 
@@ -624,6 +624,64 @@ expression
 
         | comparison {
                 $$ = $1;
+        }
+
+        | lambda {
+                $$ = $1;
+        }
+        ;
+
+lambda
+        : lambda_main {
+                $$ = $1;
+        }
+        ;
+
+lambda_main
+        : lambda_assignment_arg __COLON {yyclearin;} initializer {
+                $$ = $4;
+
+                mem_pop_overlide();
+
+                const uint64_t fpos = pc_pop();
+                yyclearin;
+                jump_run(fpos);
+                yycurbyte = yynextbyte = fpos;
+        }
+        ;
+
+lambda_assignment_arg
+        : lambda_head initializer {
+                struct Complex oldval = $2;
+
+                mem_push_overlide();
+
+                mem_create_var($1, 0);
+                struct MemTag* memtag = mem_read_var_memtag($1, 0);
+                struct Complex* newvalp = (struct Complex*)(memtag->address);
+                newvalp[memtag->index] = oldval;
+
+                const uint64_t fpos = pc_pop();
+                pc_push(yycurbyte);     /* 引数の次の位置（lambda関数の終了後に飛ぶ位置）を保存 */
+#ifdef DEBUG
+printf("lambda_assignment_arg(), 引数の次の位置（lambda関数の終了後に飛ぶ位置）を保存 [%d] \n",  yycurbyte);
+#endif /* DEBUG */
+
+                jump_run(fpos);
+                yyclearin;
+                yycurbyte = yynextbyte = fpos;
+        }
+        ;
+
+lambda_head
+        : __LB __BACKSLASH __IDENTIFIER {
+                strncpy($$, $3, 0xFFF);
+
+                pc_push(yynextbyte);
+#ifdef DEBUG
+printf("lambda_head(), (/x.の.位置（arg読み込み後に飛ぶ位置）を保存 [%d] \n",  yynextbyte);
+#endif /* DEBUG */
+                skip_lambda_body_block();
         }
         ;
 
