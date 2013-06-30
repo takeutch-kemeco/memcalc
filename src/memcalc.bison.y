@@ -675,7 +675,7 @@ printf("lambda_assignment_arg(), 引数の次の位置（lambda関数の終了�
 
 lambda_head
         : __LB __BACKSLASH __IDENTIFIER {
-                strncpy($$, $3, 0xFFF);
+                strncpy($$, $3, 0x7F);
 
                 pc_push(yynextbyte);
 #ifdef DEBUG
