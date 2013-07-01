@@ -188,18 +188,46 @@ struct Complex complex_not(const struct Complex a)
         return complex_constructor(re, im);
 }
 
+static double double_comparison(const double a, const double b)
+{
+        const double epsilon = 1e-14;
+
+        if (a == b)
+                return 1;
+        else if ((a > b) && ((a - b) < epsilon))
+                return 1;
+        else if ((b > a) && ((b - a) < epsilon))
+                return 1;
+
+        return 0;
+}
+
 struct Complex complex_comparison(const struct Complex a, const struct Complex b)
 {
-        const double re = (complex_realpart(a) == complex_realpart(b)) ? 1 : 0;
-        const double im = (complex_imagpart(a) == complex_imagpart(b)) ? 1 : 0;
+        const double re = double_comparison(complex_realpart(a), complex_realpart(b));
+        const double im = double_comparison(complex_imagpart(a), complex_imagpart(b));
 
         return complex_constructor(re, im);
 }
 
+static double double_not_comparison(const double a, const double b)
+{
+        const double epsilon = 1e-14;
+
+        if (a == b)
+                return 0;
+        else if ((a > b) && ((a - b) < epsilon))
+                return 0;
+        else if ((b > a) && ((b - a) < epsilon))
+                return 0;
+
+        return 1;
+}
+
 struct Complex complex_not_comparison(const struct Complex a, const struct Complex b)
 {
-        const double re = (complex_realpart(a) != complex_realpart(b)) ? 1 : 0;
-        const double im = (complex_imagpart(a) != complex_imagpart(b)) ? 1 : 0;
+        const double re = double_not_comparison(complex_realpart(a), complex_realpart(b));
+        const double im = double_not_comparison(complex_imagpart(a), complex_imagpart(b));
 
         return complex_constructor(re, im);
 }
