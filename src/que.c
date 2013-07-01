@@ -19,83 +19,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "array.h"
 #include "que.h"
 
-static void** new_array(const size_t array_len,
-                        func_que_unit_constructor unit_constructor)
-{
-        void** a = malloc(sizeof(*a) * array_len);
-        if (a == NULL) {
-                printf("err: que.c, new_array(), malloc, array_len\n");
-                return NULL;
-        }
-
-        int i;
-        for (i = 0; i < array_len; i++) {
-                a[i] = unit_constructor();
-                if (a[i] == NULL) {
-                        printf("err: que.c, new_array(), unit_constructor\n");
-                        return NULL;
-                }
-        }
-
-        return a;
-}
-
-static int free_array(void** a,
-                      const size_t array_len,
-                      func_que_unit_destructor unit_destructor)
-{
-        int i;
-        for (i = 0; i < array_len; i++) {
-                int err = unit_destructor(a[i]);
-                if (err) {
-                        printf("err: que.c, delete_array(), unit_destructor, a\n");
-                        return -1;
-                }
-        }
-
-        free(a);
-
-        return 0;
-}
-
-static void** extend_array(void** old_array,
-                           const size_t old_array_len,
-                           const size_t new_array_len,
-                           func_que_unit_constructor unit_constructor,
-                           func_que_unit_destructor unit_destructor,
-                           func_que_unit_copy unit_copy)
-{
-        void** dst = new_array(new_array_len, unit_constructor);
-        if (dst == NULL) {
-                printf("err: que.c, extend_array(), new_array, dst\n");
-                return NULL;
-        }
-
-        int i;
-        for (i = 0; i < old_array_len; i++) {
-                int err = unit_copy(dst[i], old_array[i]);
-                if (err) {
-                        printf("err: que.c, extend_array(), unit_copy\n");
-                        return NULL;
-                }
-        }
-
-        int err = free_array(old_array, old_array_len, unit_destructor);
-        if (err) {
-                printf("err: que.c, extend_array(), free_array\n");
-                return NULL;
-        }
-
-        return dst;
-}
+#define DEFAULT_QUE_LEN 0x100
 
 static int inc_head(struct Que* a)
 {
         size_t new_head = a->head + 1;
 
-        if (new_head >= a->len)
+        if (new_head >= a->array->len)
                 new_head = 0;
 
         if (new_head == a->tail)
@@ -112,16 +45,16 @@ static int inc_tail(struct Que* a)
 
         size_t new_tail = a->tail + 1;
 
-        if (new_tail >= a->len)
+        if (new_tail >= a->array->len)
                 new_tail = 0;
 
         a->tail = new_tail;
         return 0;
 }
 
-struct Que* que_new(func_que_unit_constructor unit_constructor,
-                    func_que_unit_destructor unit_destructor,
-                    func_que_unit_copy unit_copy)
+struct Que* que_new(func_array_unit_constructor unit_constructor,
+                    func_array_unit_destructor unit_destructor,
+                    func_array_unit_copy unit_copy)
 {
         struct Que* a = malloc(sizeof(*a));
         if (a == NULL) {
@@ -129,16 +62,11 @@ struct Que* que_new(func_que_unit_constructor unit_constructor,
                 return NULL;
         }
 
-        a->len = 0x100;
         a->head = 0;
         a->tail = 0;
-        a->unit_constructor = unit_constructor;
-        a->unit_destructor = unit_destructor;
-        a->unit_copy = unit_copy;
-
-        a->array = new_array(a->len, a->unit_constructor);
+        a->array = array_new(DEFAULT_QUE_LEN, unit_constructor, unit_destructor, unit_copy);
         if (a->array == NULL) {
-                printf("err: que_new(), new_array, a->array\n");
+                printf("err: que_new(), array_new(), a->array\n");
                 return NULL;
         }
 
@@ -147,9 +75,9 @@ struct Que* que_new(func_que_unit_constructor unit_constructor,
 
 int que_free(struct Que* a)
 {
-        int err = free_array(a->array, a->len, a->unit_destructor);
+        int err = array_free(a->array);
         if (err) {
-                printf("err: que_free(), delete_array\n");
+                printf("err: que_free(), array_free()\n");
                 return -1;
         }
 
@@ -160,20 +88,17 @@ int que_free(struct Que* a)
 
 int que_enque(struct Que* a, void* unit)
 {
-        int err = a->unit_copy(a->array[a->head], unit);
+        int err = array_write_unit(a->array, a->head, unit);
         if (err) {
-                printf("err: que_enque(), unit_copy\n");
+                printf("err: que_enque(), array_write_unit()\n");
                 return -1;
         }
 
         if (inc_head(a) != 0) {
-                const size_t old_len = a->len;
-                a->len <<= 1;
-
-                a->array = extend_array(a->array, old_len, a->len,
-                                        a->unit_constructor, a->unit_destructor, a->unit_copy);
-                if (a->array == NULL) {
-                        printf("err: que_enque(), extend_array, a->array\n");
+                const size_t old_len = a->array->len;
+                int err = array_extend_x2(a->array);
+                if (err) {
+                        printf("err: que_enque(), array_extend_x2(), a->array\n");
                         return -1;
                 }
 
@@ -186,25 +111,36 @@ int que_enque(struct Que* a, void* unit)
         return 0;
 }
 
-void* que_deque(struct Que* a)
+int que_deque(struct Que* a, void* unit)
 {
         if (a->head == a->tail) {
                 printf("err: que_deque(), que empty\n");
-                return NULL;
+                return -1;
         }
 
-        void* tmp = a->array[a->tail];
+        int err = array_read_unit(a->array, a->tail, unit);
+        if (err) {
+                printf("err: que_deque(), array_read_unit()\n");
+                return -1;
+        }
+
         inc_tail(a);
 
-        return tmp;
+        return 0;
 }
 
-void* que_read(struct Que* a)
+int que_read(struct Que* a, void* unit)
 {
         if (a->head == a->tail) {
                 printf("err: que_read(), que empty\n");
-                return NULL;
+                return -1;
         }
 
-        return a->array[a->tail];
+        int err = array_read_unit(a->array, a->tail, unit);
+        if (err) {
+                printf("err: que_read(), array_read_unit()\n");
+                return -1;
+        }
+
+        return 0;
 }

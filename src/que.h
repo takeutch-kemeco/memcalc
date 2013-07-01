@@ -18,32 +18,25 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include "array.h"
 
 #ifndef __QUE_H__
 #define __QUE_H__
 
-typedef void* (*func_que_unit_constructor)(void);
-typedef int (*func_que_unit_destructor)(void* a);
-typedef int (*func_que_unit_copy)(void* dst, void* src);
-
 struct Que {
-        size_t len;
         size_t head;
         size_t tail;
-        void** array;
-        func_que_unit_constructor unit_constructor;
-        func_que_unit_destructor unit_destructor;
-        func_que_unit_copy unit_copy;
+        struct Array* array;
 };
 
-struct Que* que_new(func_que_unit_constructor unit_constructor,
-                    func_que_unit_destructor unit_destructor,
-                    func_que_unit_copy unit_copy);
+struct Que* que_new(func_array_unit_constructor unit_constructor,
+                    func_array_unit_destructor unit_destructor,
+                    func_array_unit_copy unit_copy);
 int que_free(struct Que* a);
 
 int que_enque(struct Que* a, void* unit);
-void* que_deque(struct Que* a);
+int que_deque(struct Que* a, void* unit);
 
-void* que_read(struct Que* a);
+int que_read(struct Que* a, void* unit);
 
 #endif /* __QUE_H__ */

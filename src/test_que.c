@@ -29,41 +29,53 @@ static int copy(void* dst, void* src) {*((uint64_t*)dst) = *((uint64_t*)src); re
 
 static void f(void)
 {
-        struct Que* s = que_new(constructor, destractor, copy);
+        struct Que* q = que_new(constructor, destractor, copy);
 
-        int i = 0;
+        size_t i;
         for (i = 0; i < 20; i++) {
-                que_enque(s, (void*)&t);
-                printf("que_enque(), que_read() => %ld\n", *((uint64_t*)que_read(s)));
+                que_enque(q, (void*)&t);
+
+                uint64_t tmp;
+                que_read(q, (void*)&tmp);
+                printf("que_enque(), que_read() => %ld\n", tmp);
                 t++;
         }
 
         for (i = 0; i < 20; i++) {
-                printf("que_deque() => %ld\n", *((uint64_t*)que_deque(s)));
+                uint64_t tmp;
+                que_deque(q, (void*)&tmp);
+                printf("que_deque() => %ld\n", tmp);
         }
 
-        que_free(s);
+        que_free(q);
 }
 
 static void g(void)
 {
-        struct Que* s = que_new(constructor, destractor, copy);
+        struct Que* q = que_new(constructor, destractor, copy);
 
-        t = 1000000;
+        const size_t len = 1000000;
+        t = len;
 
-        int i = 0;
-        for (i = 0; i < 1000000; i++) {
-                que_enque(s, (void*)&t);
+        size_t i;
+        for (i = 0; i < len; i++) {
+                que_enque(q, (void*)&t);
                 t++;
         }
 
-        printf("que_enque() * 1M, que_read() => %ld\n", *((uint64_t*)que_read(s)));
+        uint64_t tmp;
+        que_read(q, (void*)&tmp);
+        printf("que_enque() * 1M, que_read() => %ld\n", tmp);
 
-        for (i = 1; i < 1000000; i++) {
-                que_deque(s);
+        for (i = 1; i < len; i++) {
+                uint64_t tmp;
+                que_deque(q, (void*)&tmp);
         }
 
-        printf("que_deque() * (1M - 1), que_read() => %ld\n", *((uint64_t*)que_read(s)));
+        que_read(q, (void*)&tmp);
+        printf("que_deque() * (1M - 1), que_read() => %ld\n", tmp);
+
+        que_free(q);
 }
 
 int main(int argc, char** argv)
