@@ -19,81 +19,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "array.h"
 #include "stack.h"
 
-static void** new_array(const size_t array_len,
-                        func_stack_unit_constructor unit_constructor)
-{
-        void** a = malloc(sizeof(*a) * array_len);
-        if (a == NULL) {
-                printf("err: create_array(), malloc, array_len\n");
-                return NULL;
-        }
+#define DEFAULT_STACK_LEN 0x100
 
-        int i;
-        for (i = 0; i < array_len; i++) {
-                a[i] = unit_constructor();
-                if (a[i] == NULL) {
-                        printf("err: create_array(), unit_constructor\n");
-                        return NULL;
-                }
-        }
-
-        return a;
-}
-
-static int free_array(void** a,
-                      const size_t array_len,
-                      func_stack_unit_destructor unit_destructor)
-{
-        int i;
-        for (i = 0; i < array_len; i++) {
-                int err = unit_destructor(a[i]);
-                if (err) {
-                        printf("err: delete_array(), unit_destructor, a\n");
-                        return -1;
-                }
-        }
-
-        free(a);
-
-        return 0;
-}
-
-static void** extend_array(void** old_array,
-                           const size_t old_array_len,
-                           const size_t new_array_len,
-                           func_stack_unit_constructor unit_constructor,
-                           func_stack_unit_destructor unit_destructor,
-                           func_stack_unit_copy unit_copy)
-{
-        void** dst = new_array(new_array_len, unit_constructor);
-        if (dst == NULL) {
-                printf("err: extend_array(), new_array, dst\n");
-                return NULL;
-        }
-
-        int i;
-        for (i = 0; i < old_array_len; i++) {
-                int err = unit_copy(dst[i], old_array[i]);
-                if (err) {
-                        printf("err: extend_array(), unit_copy\n");
-                        return NULL;
-                }
-        }
-
-        int err = free_array(old_array, old_array_len, unit_destructor);
-        if (err) {
-                printf("extend_array(), free_array\n");
-                return NULL;
-        }
-
-        return dst;
-}
-
-struct Stack* stack_new(func_stack_unit_constructor unit_constructor,
-                        func_stack_unit_destructor unit_destructor,
-                        func_stack_unit_copy unit_copy)
+struct Stack* stack_new(func_array_unit_constructor unit_constructor,
+                        func_array_unit_destructor unit_destructor,
+                        func_array_unit_copy unit_copy)
 {
         struct Stack* a = malloc(sizeof(*a));
         if (a == NULL) {
@@ -101,15 +34,10 @@ struct Stack* stack_new(func_stack_unit_constructor unit_constructor,
                 return NULL;
         }
 
-        a->len = 0x100;
         a->head = 0;
-        a->unit_constructor = unit_constructor;
-        a->unit_destructor = unit_destructor;
-        a->unit_copy = unit_copy;
-
-        a->array = new_array(a->len, a->unit_constructor);
+        a->array = array_new(DEFAULT_STACK_LEN, unit_constructor, unit_destructor, unit_copy);
         if (a->array == NULL) {
-                printf("err: stack_new(), new_array, a->array\n");
+                printf("err: stack_new(), array_new(), a->array\n");
                 return NULL;
         }
 
@@ -118,9 +46,9 @@ struct Stack* stack_new(func_stack_unit_constructor unit_constructor,
 
 int stack_free(struct Stack* a)
 {
-        int err = free_array(a->array, a->len, a->unit_destructor);
+        int err = array_free(a->array);
         if (err) {
-                printf("err: stack_free(), delete_array\n");
+                printf("err: stack_free(), array_free()\n");
                 return -1;
         }
 
@@ -131,19 +59,15 @@ int stack_free(struct Stack* a)
 
 int stack_push(struct Stack* a, void* unit)
 {
-        if (a->head >= a->len) {
-                const size_t old_len = a->len;
-                a->len <<= 1;
-
-                a->array = extend_array(a->array, old_len, a->len,
-                                        a->unit_constructor, a->unit_destructor, a->unit_copy);
-                if (a->array == NULL) {
-                        printf("err: stack_push(), extend_array, a->array\n");
+        if (a->head >= a->array->len) {
+                int err = array_extend_x2(a->array);
+                if (err) {
+                        printf("err: stack_push(), extend_array(), a->array\n");
                         return -1;
                 }
         }
 
-        int err = a->unit_copy(a->array[a->head], unit);
+        int err = array_write_unit(a->array, a->head, unit);
         if (err) {
                 printf("err: stack_push(), unit_copy\n");
                 return -1;
@@ -154,24 +78,36 @@ int stack_push(struct Stack* a, void* unit)
         return 0;
 }
 
-void* stack_pop(struct Stack* a)
+int stack_pop(struct Stack* a, void* unit)
 {
         if (a->head == 0) {
                 printf("err: stack_pop(), stack_underflow\n");
-                return NULL;
+                return -1;
         }
 
         a->head--;
 
-        return a->array[a->head];
+        int err = array_read_unit(a->array, a->head, unit);
+        if (err) {
+                printf("err: stack_pop(), array_read_unit()\n");
+                return -1;
+        }
+
+        return 0;
 }
 
-void* stack_read(struct Stack* a)
+int stack_read(struct Stack* a, void* unit)
 {
         if (a->head == 0) {
                 printf("err: stack_read(), stack_underflow\n");
-                return NULL;
+                return -1;
         }
 
-        return a->array[a->head - 1];
+        int err = array_read_unit(a->array, a->head - 1, unit);
+        if (err) {
+                printf("err: stack_read(), array_read_unit()\n");
+                return -1;
+        }
+
+        return 0;
 }

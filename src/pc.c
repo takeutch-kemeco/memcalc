@@ -55,5 +55,7 @@ void pc_push(const uint64_t fpos)
 
 uint64_t pc_pop(void)
 {
-        return *((uint64_t*)stack_pop(pc_stack));
+        uint64_t tmp;
+        stack_pop(pc_stack, (void*)&tmp);
+        return tmp;
 }

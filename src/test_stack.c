@@ -34,12 +34,17 @@ static void f(void)
         int i = 0;
         for (i = 0; i < 20; i++) {
                 stack_push(s, (void*)&t);
-                printf("stack_push(), stack_read() => %ld\n", *((uint64_t*)stack_read(s)));
+
+                uint64_t tmp;
+                stack_read(s, (void*)&tmp);
+                printf("stack_push(), stack_read() => %ld\n", tmp);
                 t++;
         }
 
         for (i = 0; i < 20; i++) {
-                printf("stack_pop() => %ld\n", *((uint64_t*)stack_pop(s)));
+                uint64_t tmp;
+                stack_pop(s, (void*)&tmp);
+                printf("stack_pop() => %ld\n", tmp);
         }
 
         stack_free(s);
@@ -49,21 +54,26 @@ static void g(void)
 {
         struct Stack* s = stack_new(constructor, destractor, copy);
 
-        t = 1000000;
+        const uint64_t len = 1000000;
+        t = len;
 
         int i = 0;
-        for (i = 0; i < 1000000; i++) {
+        for (i = 0; i < len; i++) {
                 stack_push(s, (void*)&t);
                 t++;
         }
 
-        printf("stack_push() * 1M, stack_read() => %ld\n", *((uint64_t*)stack_read(s)));
+        uint64_t tmp;
+        stack_read(s, (void*)&tmp);
+        printf("stack_push() * 1M, stack_read() => %ld\n", tmp);
 
-        for (i = 1; i < 1000000; i++) {
-                stack_pop(s);
+        for (i = 1; i < len; i++) {
+                uint64_t tmp;
+                stack_pop(s, (void*)&tmp);
         }
 
-        printf("stack_pop() * (1M - 1), stack_read() => %ld\n", *((uint64_t*)stack_read(s)));
+        stack_read(s, (void*)&tmp);
+        printf("stack_pop() * (1M - 1), stack_read() => %ld\n", tmp);
 }
 
 int main(int argc, char** argv)

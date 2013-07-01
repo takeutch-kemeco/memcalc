@@ -154,7 +154,12 @@ static struct REF* search_overlide_ref(const char* name)
 
         struct REF* p = seek_reflist_cur_head();
 
-        const uint64_t reflist_overlide_botom = *((uint64_t*)stack_read(mem_stack));
+        uint64_t reflist_overlide_botom;
+        int err = stack_read(mem_stack, (void*)&reflist_overlide_botom);
+        if (err) {
+                printf("err: search_overlide_ref(), stack_read()\n");
+                return NULL;
+        }
 
         int i;
         for (i = reflist_overlide_botom; i < reflist_head; i++) {
@@ -214,12 +219,24 @@ struct Complex mem_read_var_value(const char* name, const size_t index)
         return tmp[p->index];
 }
 
-void mem_push_overlide(void)
+int mem_push_overlide(void)
 {
-        stack_push(mem_stack, (void*)&reflist_head);
+        int err = stack_push(mem_stack, (void*)&reflist_head);
+        if (err) {
+                printf("err: mem_push_overlide()\n");
+                return -1;
+        }
+
+        return 0;
 }
 
-void mem_pop_overlide(void)
+int mem_pop_overlide(void)
 {
-        reflist_head = *((uint64_t*)stack_pop(mem_stack));
+        int err = stack_pop(mem_stack, (void*)&reflist_head);
+        if (err) {
+                printf("err: mem_pop_overlide()\n");
+                return -1;
+        }
+
+        return 0;
 }

@@ -37,7 +37,7 @@ bool mem_create_var(const char* name, const size_t index_len);
 struct MemTag* mem_read_var_memtag(const char* name, const size_t index);
 struct Complex mem_read_var_value(const char* name, const size_t index);
 
-void mem_push_overlide(void);
-void mem_pop_overlide(void);
+int mem_push_overlide(void);
+int mem_pop_overlide(void);
 
 #endif /* __MEM_H__ */
