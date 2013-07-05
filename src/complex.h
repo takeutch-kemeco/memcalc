@@ -32,6 +32,9 @@ struct Comparison {
         ComplexComparisonFunc f;
 };
 
+struct Complex* complex_new(const double re, const double im);
+int complex_free(struct Complex* a);
+
 struct Complex complex_constructor(const double re, const double im);
 double complex_realpart(const struct Complex a);
 double complex_imagpart(const struct Complex a);

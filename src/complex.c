@@ -16,9 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
 #include <math.h>
 #include <stdint.h>
 #include "complex.h"
+
+struct Complex* complex_new(const double re, const double im)
+{
+        struct Complex* a = malloc(sizeof(*a));
+        *a = complex_constructor(re, im);
+        return a;
+}
+
+int complex_free(struct Complex* a)
+{
+        free(a);
+        return 0;
+}
 
 struct Complex complex_constructor(const double re, const double im)
 {
