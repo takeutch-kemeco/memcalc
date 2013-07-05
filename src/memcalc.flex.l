@@ -66,6 +66,7 @@ static void update_line_yycurbyte(void)
 %x main_process_comment
 %x main_process_char
 %x main_process_skip_declaration_block
+%x main_process_skip_bracket_block
 %x main_process_skip_lambda_body_block
 
 %%
@@ -222,6 +223,9 @@ static void update_line_yycurbyte(void)
 
 <main_process>"if"      update_return(__STATE_IF);
 <main_process>"else"    update_return(__STATE_ELSE);
+
+<main_process>"->"      update_return(__STATE_EXP_IF);
+<main_process>"::"     update_return(__STATE_EXP_ELSE);
 
 <main_process>"["       update_return(__ARRAY_BEGIN);
 <main_process>"]"       update_return(__ARRAY_END);

@@ -29,6 +29,7 @@
 #include "complex.h"
 #include "jmptbl.h"
 #include "pc.h"
+#include "node.h"
 
 #include "func_putpixel.h"
 
@@ -71,6 +72,7 @@ void jump_run(uint32_t fpos)
 
 %token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
+%token __STATE_EXP_IF __STATE_EXP_ELSE
 %token __STATE_GOTO __STATE_GOSUB __STATE_RETURN
 %token __CONST_FLOAT
 %token __OPE_PLUS __OPE_MINUS
@@ -103,10 +105,10 @@ void jump_run(uint32_t fpos)
 
 %type <fpos> __DECL_END;
 %type <realval> __CONST_FLOAT
-%type <compval> expression initializer function read_variable assignment comparison lambda lambda_main
+%type <compval> expression initializer function read_variable assignment comparison lambda lambda_main exp_selection
 %type <comparisonval> comparison_unit
 %type <compval> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
-%type <icf> if_conditional
+%type <icf> if_conditional exp_if_conditional
 %type <identifier> __IDENTIFIER lambda_head
 %type <memtag> declarator
 %start translation_unit
@@ -626,6 +628,10 @@ expression
                 $$ = $1;
         }
 
+        | exp_selection {
+                $$ = $1;
+        }
+
         | lambda {
                 $$ = $1;
         }
@@ -764,6 +770,22 @@ selection
                 if ($1 != 0)
                         skip_declaration_block();
         } declaration_block
+        ;
+
+exp_if_conditional
+        : expression __STATE_EXP_IF {
+                const uint32_t re = (uint32_t)complex_realpart($1);
+                $$ = re;
+        }
+        ;
+
+exp_selection
+        : exp_if_conditional expression __STATE_EXP_ELSE expression {
+                if ($1 != 0)
+                        $$ = $2;
+                else
+                        $$ = $4;
+        }
         ;
 
 jump
