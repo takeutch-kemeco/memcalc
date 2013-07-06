@@ -11,7 +11,7 @@ memcalc_SOURCES = main.c                                        \
                   que.c que.h                                   \
                   array.c array.h                               \
                   node.c node.h                                 \
-                  calcnode.h                                    \
+                  calcnode.c calcnode.h                         \
                   calcnode_expression.c calcnode_expression.h
 
 LFLAGS = -Cf -8

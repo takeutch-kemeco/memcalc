@@ -25,6 +25,7 @@
 #define __CALCNODE_H__
 
 enum CalcNodeType {
+        CNT_NULL,
         CNT_COMPVAL,
         CNT_FUNCPTR,
 };
@@ -34,5 +35,7 @@ struct CalcNode {
         struct Complex compval;
         void* funcptr;
 };
+
+struct CalcNode calcnode_expression(struct Node* a);
 
 #endif /* __CALCNODE_H__ */

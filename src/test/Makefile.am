@@ -22,9 +22,8 @@ test_calcnode_expression_SOURCES = test_calcnode_expression.c           \
                                    ../complex.c ../complex.h            \
                                    ../array.c ../array.h                \
                                    ../memcalc.bison.h                   \
-                                   ../calcnode.h                        \
+                                   ../calcnode.c ../calcnode.h          \
                                    ../calcnode_expression.c ../calcnode_expression.h
 
 CFLAGS = -g -DDEBUG
 LIBS = -lm
-
