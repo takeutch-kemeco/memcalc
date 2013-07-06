@@ -84,6 +84,6 @@ struct CalcNode calcnode_function(struct Node* a)
         case __FUNC_PUTCHAR:         return calcnode_function__FUNC_PUTCHAR(a);
         }
 
-        struct CalcNode cn = {.type = CNT_EMPTY};
+        struct CalcNode cn = {.type = CNT_NOT_FOUND};
         return cn;
 }
