@@ -1,4 +1,4 @@
-/* test_node.c
+/* test_node3.c
  * Copyright (C) 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
@@ -27,8 +27,15 @@ static void create_child(struct Node* s, const int len)
 {
         int i;
         for (i = 0; i < len; i++, un++) {
-                struct Node* tmp = node_new(un);
-                create_child(tmp, len - 1);
+                struct Node* tmp;
+                if (len == 1) {
+                        uint64_t* xxx = malloc(sizeof(*xxx));
+                        *xxx = un + 0x2000;
+                        tmp = node_new_leaf(un + 0x1000, xxx);
+                } else {
+                        tmp = node_new(un);
+                        create_child(tmp, len - 1);
+                }
 
                 node_link(s, tmp);
         }
@@ -36,7 +43,7 @@ static void create_child(struct Node* s, const int len)
 
 struct Node* f(const int len)
 {
-        struct Node* s = node_new(12345);
+        struct Node* s = node_new(777);
         create_child(s, len);
 
         return s;
@@ -50,10 +57,16 @@ static void print_node(struct Node* s)
         for (i = 1; i < indent; i++)
                 printf("\t");
 
-        printf("s[%p, %d], s.ChildLen:[%d]\n", s, s->ope, s->child_len);
+        if (s->ope < 0x1000) {
+                printf("s[%p, %d], s.ChildLen[%d]\n", s, s->ope, s->child_len);
+        } else {
+                struct Node* tmp = node_child(s, 0);
+                printf("leaf: s[%p, %d], s.ChildLen[%d], val[%d]\n", s, s->ope, s->child_len, *((uint64_t*)tmp));
+        }
 
-        for (i = 0; i < s->child_len; i++)
-                print_node(node_child(s, i));
+        if (s->ope < 0x1000)
+                for (i = 0; i < s->child_len; i++)
+                        print_node(node_child(s, i));
 
         indent--;
 }
