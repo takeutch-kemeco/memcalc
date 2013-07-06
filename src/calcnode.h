@@ -25,7 +25,8 @@
 #define __CALCNODE_H__
 
 enum CalcNodeType {
-        CNT_NULL,
+        CNT_EMPTY,
+        CNT_BOTTOM,
         CNT_COMPVAL,
         CNT_FUNCPTR,
 };

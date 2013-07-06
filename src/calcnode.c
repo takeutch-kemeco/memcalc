@@ -49,6 +49,6 @@ struct CalcNode calcnode_expression(struct Node* a)
         case __OPE_MINUS:               return expression__OPE_MINUS(a);
         }
 
-        struct CalcNode cn = {.type = CNT_NULL};
+        struct CalcNode cn = {.type = CNT_EMPTY};
         return cn;
 }
