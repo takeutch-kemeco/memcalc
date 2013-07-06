@@ -22,27 +22,6 @@
 #ifndef __CALCNODE_EXPRESSION_H__
 #define __CALCNODE_EXPRESSION_H__
 
-struct CalcNode expression__CONST_FLOAT(struct Node* a);
-struct CalcNode expression__OPE_REAL_PART(struct Node* a);
-struct CalcNode expression__OPE_IMAGINARY_PART(struct Node* a);
-struct CalcNode expression__OPE_CONJUGATE(struct Node* a);
-struct CalcNode expression__OPE_ARGUMENT(struct Node* a);
-struct CalcNode expression__OPE_ABSOLUTE(struct Node* a);
-struct CalcNode expression__OPE_COMPLEX(struct Node* a);
-struct CalcNode expression__OPE_COMPLEX_POLAR(struct Node* a);
-struct CalcNode expression__OPE_ADD(struct Node* a);
-struct CalcNode expression__OPE_SUB(struct Node* a);
-struct CalcNode expression__OPE_MUL(struct Node* a);
-struct CalcNode expression__OPE_DIV(struct Node* a);
-struct CalcNode expression__OPE_POWER(struct Node* a);
-struct CalcNode expression__OPE_MOD(struct Node* a);
-struct CalcNode expression__OPE_LSHIFT(struct Node* a);
-struct CalcNode expression__OPE_RSHIFT(struct Node* a);
-struct CalcNode expression__OPE_OR(struct Node* a);
-struct CalcNode expression__OPE_AND(struct Node* a);
-struct CalcNode expression__OPE_XOR(struct Node* a);
-struct CalcNode expression__OPE_NOT(struct Node* a);
-struct CalcNode expression__OPE_PLUS(struct Node* a);
-struct CalcNode expression__OPE_MINUS(struct Node* a);
+struct CalcNode calcnode_expression(struct Node* a);
 
 #endif /* __CALCNODE_EXPRESSION_H__ */
