@@ -24,12 +24,13 @@
 #include "calcnode.h"
 #include "calcnode_expression.h"
 #include "calcnode_function.h"
+#include "calcnode_bl_function.h"
 #include "func_putpixel.h"
 #include "memcalc.bison.h"
 
 static struct CalcNode calcnode_function__FUNC_PRINT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double re = complex_realpart(cn0.compval);
         const double im = complex_imagpart(cn0.compval);
@@ -46,11 +47,11 @@ static struct CalcNode calcnode_function__FUNC_PRINT(struct Node* a)
 
 static struct CalcNode calcnode_function__FUNC_PUTPIXEL(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
-        struct CalcNode cn4 = calcnode_expression(node_child(a, 4));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
+        struct CalcNode cn4 = calcnode(node_child(a, 4));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -67,7 +68,7 @@ static struct CalcNode calcnode_function__FUNC_PUTPIXEL(struct Node* a)
 
 static struct CalcNode calcnode_function__FUNC_PUTCHAR(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         putchar(complex_realpart(cn0.compval));
 
@@ -84,6 +85,5 @@ struct CalcNode calcnode_function(struct Node* a)
         case __FUNC_PUTCHAR:         return calcnode_function__FUNC_PUTCHAR(a);
         }
 
-        struct CalcNode cn = {.type = CNT_NOT_FOUND};
-        return cn;
+        return calcnode_bl_function(a);
 }

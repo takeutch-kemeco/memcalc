@@ -28,7 +28,7 @@
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_PUTC(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -86,7 +86,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_RAND(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_SRAND(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -108,8 +108,8 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_GETS(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_OPENWIN(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -123,7 +123,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_OPENWIN(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_SETCOL(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -136,7 +136,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_SETCOL(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_SETBCOL(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -149,9 +149,9 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_SETBCOL(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_RGB(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -167,7 +167,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_RGB(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_ICOL(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -180,10 +180,10 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_ICOL(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_FLSHWIN(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -208,9 +208,9 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_GETGRPB(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_SETPIX(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -225,10 +225,10 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_SETPIX(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_FILLRECT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -244,10 +244,10 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_FILLRECT(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_DRAWRECT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -263,10 +263,10 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_DRAWRECT(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_DRAWLINE(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -282,7 +282,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_DRAWLINE(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_RND(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -296,7 +296,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_RND(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_WAIT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -309,8 +309,8 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_WAIT(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_COLOR(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -324,8 +324,8 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_COLOR(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_LOCATE(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -339,8 +339,8 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_LOCATE(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_GETPIX(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -355,7 +355,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_GETPIX(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_WAITNF(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -409,7 +409,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_INPTFLOT(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_SETMODE(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -422,10 +422,10 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_SETMODE(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_FILLOVAL(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -450,9 +450,9 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_DRAWSTR(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_OPENVWIN(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -467,7 +467,7 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_OPENVWIN(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_SLCTWIN(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         const double cn0re = complex_realpart(cn0.compval);
 
@@ -480,14 +480,14 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_SLCTWIN(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_COPYRCT0(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
-        struct CalcNode cn4 = calcnode_expression(node_child(a, 4));
-        struct CalcNode cn5 = calcnode_expression(node_child(a, 5));
-        struct CalcNode cn6 = calcnode_expression(node_child(a, 6));
-        struct CalcNode cn7 = calcnode_expression(node_child(a, 7));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
+        struct CalcNode cn4 = calcnode(node_child(a, 4));
+        struct CalcNode cn5 = calcnode(node_child(a, 5));
+        struct CalcNode cn6 = calcnode(node_child(a, 6));
+        struct CalcNode cn7 = calcnode(node_child(a, 7));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);
@@ -508,15 +508,15 @@ static struct CalcNode calcnode_bl_function__FUNC_BL_COPYRCT0(struct Node* a)
 
 static struct CalcNode calcnode_bl_function__FUNC_BL_COPYRCT1(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
-        struct CalcNode cn2 = calcnode_expression(node_child(a, 2));
-        struct CalcNode cn3 = calcnode_expression(node_child(a, 3));
-        struct CalcNode cn4 = calcnode_expression(node_child(a, 4));
-        struct CalcNode cn5 = calcnode_expression(node_child(a, 5));
-        struct CalcNode cn6 = calcnode_expression(node_child(a, 6));
-        struct CalcNode cn7 = calcnode_expression(node_child(a, 7));
-        struct CalcNode cn8 = calcnode_expression(node_child(a, 8));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        struct CalcNode cn2 = calcnode(node_child(a, 2));
+        struct CalcNode cn3 = calcnode(node_child(a, 3));
+        struct CalcNode cn4 = calcnode(node_child(a, 4));
+        struct CalcNode cn5 = calcnode(node_child(a, 5));
+        struct CalcNode cn6 = calcnode(node_child(a, 6));
+        struct CalcNode cn7 = calcnode(node_child(a, 7));
+        struct CalcNode cn8 = calcnode(node_child(a, 8));
 
         const double cn0re = complex_realpart(cn0.compval);
         const double cn1re = complex_realpart(cn1.compval);

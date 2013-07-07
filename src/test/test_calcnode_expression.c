@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <blike0.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -49,7 +50,7 @@ void f(void)
 }
 
 
-int main(int argc, char* argv)
+blMain()
 {
         f();
 }
