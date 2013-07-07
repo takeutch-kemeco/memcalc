@@ -13,7 +13,8 @@ memcalc_SOURCES = main.c                                        \
                   node.c node.h                                 \
                   calcnode.c calcnode.h                         \
                   calcnode_expression.c calcnode_expression.h   \
-                  calcnode_function.c calcnode_function.h
+                  calcnode_function.c calcnode_function.h       \
+                  calcnode_bl_function.c calcnode_bl_function.h
 
 LFLAGS = -Cf -8
 YFLAGS = -dv

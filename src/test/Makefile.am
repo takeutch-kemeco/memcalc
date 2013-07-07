@@ -1,6 +1,7 @@
 bin_PROGRAMS = test_array test_mem test_que test_stack                  \
                test_node test_node2 test_node3                          \
-               test_calcnode_expression test_calcnode_function
+               test_calcnode_expression test_calcnode_function          \
+               test_calcnode_bl_function
 
 test_array_SOURCES = test_array.c ../array.c ../array.h
 
@@ -35,6 +36,16 @@ test_calcnode_function_SOURCES = test_calcnode_function.c                       
                                  ../calcnode_expression.c ../calcnode_expression.h      \
                                  ../func_putpixel.c ../func_putpixel.h                  \
                                  ../calcnode_function.c ../calcnode_function.h
+
+test_calcnode_bl_function_CFLAGS = `pkg-config blike --cflags --libs`
+test_calcnode_bl_function_SOURCES = test_calcnode_bl_function.c                         \
+                                    ../node.c ../node.h                                 \
+                                    ../complex.c ../complex.h                           \
+                                    ../array.c ../array.h                               \
+                                    ../memcalc.bison.h                                  \
+                                    ../calcnode.c ../calcnode.h                         \
+                                    ../calcnode_expression.c ../calcnode_expression.h   \
+                                    ../calcnode_bl_function.c ../calcnode_bl_function.h
 
 CFLAGS = -g -DDEBUG
 LIBS = -lm
