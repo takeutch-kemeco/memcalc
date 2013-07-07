@@ -37,4 +37,6 @@ struct CalcNode {
         void* funcptr;
 };
 
+struct CalcNode calcnode(struct Node* a);
+
 #endif /* __CALCNODE_H__ */

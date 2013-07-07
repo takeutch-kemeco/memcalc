@@ -1,4 +1,4 @@
-/* calcnode_expression.c
+/* calcnode.c
  * Copyright (C) 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@
 #include "complex.h"
 #include "node.h"
 #include "calcnode.h"
-#include "calcnode_expression.h"
+#include "calcnode.h"
 #include "memcalc.bison.h"
 
 static struct CalcNode expression__CONST_FLOAT(struct Node* a)
@@ -35,7 +35,7 @@ static struct CalcNode expression__CONST_FLOAT(struct Node* a)
 
 static struct CalcNode expression__OPE_REAL_PART(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_realpart_safe(cn0.compval);
 
@@ -44,7 +44,7 @@ static struct CalcNode expression__OPE_REAL_PART(struct Node* a)
 
 static struct CalcNode expression__OPE_IMAGINARY_PART(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_imagpart_safe(cn0.compval);
 
@@ -53,7 +53,7 @@ static struct CalcNode expression__OPE_IMAGINARY_PART(struct Node* a)
 
 static struct CalcNode expression__OPE_CONJUGATE(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_conjugate(cn0.compval);
 
@@ -62,7 +62,7 @@ static struct CalcNode expression__OPE_CONJUGATE(struct Node* a)
 
 static struct CalcNode expression__OPE_ARGUMENT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_constructor(complex_imagpart(complex_polar(cn0.compval)), 0);
 
@@ -71,7 +71,7 @@ static struct CalcNode expression__OPE_ARGUMENT(struct Node* a)
 
 static struct CalcNode expression__OPE_ABSOLUTE(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_abs(cn0.compval);
 
@@ -80,8 +80,8 @@ static struct CalcNode expression__OPE_ABSOLUTE(struct Node* a)
 
 static struct CalcNode expression__OPE_COMPLEX(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_constructor(complex_realpart(cn0.compval), complex_realpart(cn1.compval));
 
@@ -90,8 +90,8 @@ static struct CalcNode expression__OPE_COMPLEX(struct Node* a)
 
 static struct CalcNode expression__OPE_COMPLEX_POLAR(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_mk_polar(complex_constructor(complex_realpart(cn0.compval), complex_realpart(cn1.compval)));
 
@@ -100,8 +100,8 @@ static struct CalcNode expression__OPE_COMPLEX_POLAR(struct Node* a)
 
 static struct CalcNode expression__OPE_ADD(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_add(cn0.compval, cn1.compval);
 
@@ -110,8 +110,8 @@ static struct CalcNode expression__OPE_ADD(struct Node* a)
 
 static struct CalcNode expression__OPE_SUB(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_sub(cn0.compval, cn1.compval);
 
@@ -120,8 +120,8 @@ static struct CalcNode expression__OPE_SUB(struct Node* a)
 
 static struct CalcNode expression__OPE_MUL(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_mul(cn0.compval, cn1.compval);
 
@@ -130,8 +130,8 @@ static struct CalcNode expression__OPE_MUL(struct Node* a)
 
 static struct CalcNode expression__OPE_DIV(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_div(cn0.compval, cn1.compval);
 
@@ -140,8 +140,8 @@ static struct CalcNode expression__OPE_DIV(struct Node* a)
 
 static struct CalcNode expression__OPE_POWER(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_pow(cn0.compval, cn1.compval);
 
@@ -150,8 +150,8 @@ static struct CalcNode expression__OPE_POWER(struct Node* a)
 
 static struct CalcNode expression__OPE_MOD(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_mod(cn0.compval, cn1.compval);
 
@@ -160,8 +160,8 @@ static struct CalcNode expression__OPE_MOD(struct Node* a)
 
 static struct CalcNode expression__OPE_LSHIFT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_lshift(cn0.compval, cn1.compval);
 
@@ -170,8 +170,8 @@ static struct CalcNode expression__OPE_LSHIFT(struct Node* a)
 
 static struct CalcNode expression__OPE_RSHIFT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_rshift(cn0.compval, cn1.compval);
 
@@ -180,8 +180,8 @@ static struct CalcNode expression__OPE_RSHIFT(struct Node* a)
 
 static struct CalcNode expression__OPE_OR(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_or(cn0.compval, cn1.compval);
 
@@ -190,8 +190,8 @@ static struct CalcNode expression__OPE_OR(struct Node* a)
 
 static struct CalcNode expression__OPE_AND(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_and(cn0.compval, cn1.compval);
 
@@ -200,8 +200,8 @@ static struct CalcNode expression__OPE_AND(struct Node* a)
 
 static struct CalcNode expression__OPE_XOR(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
-        struct CalcNode cn1 = calcnode_expression(node_child(a, 1));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
 
         cn0.compval = complex_xor(cn0.compval, cn1.compval);
 
@@ -210,7 +210,7 @@ static struct CalcNode expression__OPE_XOR(struct Node* a)
 
 static struct CalcNode expression__OPE_NOT(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_not(cn0.compval);
 
@@ -219,14 +219,14 @@ static struct CalcNode expression__OPE_NOT(struct Node* a)
 
 static struct CalcNode expression__OPE_PLUS(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         return cn0;
 }
 
 static struct CalcNode expression__OPE_MINUS(struct Node* a)
 {
-        struct CalcNode cn0 = calcnode_expression(node_child(a, 0));
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         cn0.compval = complex_constructor(-complex_realpart(cn0.compval), -complex_imagpart(cn0.compval));
 

@@ -21,3 +21,16 @@
 #include "calcnode.h"
 #include "calcnode_expression.h"
 #include "memcalc.bison.h"
+
+struct CalcNode calcnode(struct Node* a)
+{
+        struct CalcNode cn;
+
+        cn = calcnode_expression(a);
+        if (cn.type != CNT_NOT_FOUND)
+                return cn;
+
+        cn.type = CNT_NOT_FOUND;
+
+        return cn;
+}

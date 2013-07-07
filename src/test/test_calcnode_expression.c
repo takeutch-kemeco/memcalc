@@ -44,7 +44,7 @@ struct Node* t(void)
 void f(void)
 {
         struct Node* a = t();
-        struct CalcNode cn = calcnode_expression(a);
+        struct CalcNode cn = calcnode(a);
         printf("%f, %f\n", cn.compval.re, cn.compval.im);
 }
 
