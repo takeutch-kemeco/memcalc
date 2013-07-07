@@ -29,12 +29,14 @@ enum CalcNodeType {
         CNT_BOTTOM,
         CNT_COMPVAL,
         CNT_FUNCPTR,
+        CNT_STRPTR,
+        CNT_VARPTR,
 };
 
 struct CalcNode {
         enum CalcNodeType type;
         struct Complex compval;
-        void* funcptr;
+        void* ptr;
 };
 
 struct CalcNode calcnode(struct Node* a);

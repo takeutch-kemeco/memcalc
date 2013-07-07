@@ -18,13 +18,87 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "mem.h"
+#include "node.h"
+#include "complex.h"
 #include "calcnode.h"
 #include "calcnode_expression.h"
 #include "calcnode_function.h"
 #include "memcalc.bison.h"
 
+static struct CalcNode calcnode__IDENTIFIER(struct Node* a)
+{
+        const char* name = (char*)node_child(a, 0);
+
+        struct CalcNode cn0 = {.type = CNT_STRPTR, .ptr = (void*)name};
+
+        return cn0;
+}
+
+static struct CalcNode calcnode__DECLARATOR_scalar(struct Node* a)
+{
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        if (cn0.type != CNT_STRPTR) {
+                printf("syntax err: 代入先が変数ではありません\n");
+                exit(1);
+        }
+
+        const char* name = (char*)(cn0.ptr);
+        struct MemTag* var = mem_read_var_memtag(name, 0);
+
+        cn0.type = CNT_VARPTR;
+        cn0.ptr = (void*)var;
+
+        return cn0;
+}
+
+static struct CalcNode calcnode__DECLARATOR_array(struct Node* a)
+{
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        if (cn0.type != CNT_STRPTR) {
+                printf("syntax err: 代入先が変数ではありません\n");
+                exit(1);
+        }
+
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        if (cn1.type != CNT_COMPVAL) {
+                printf("syntax err: 代入先の変数のインデックスが不正です\n");
+                exit(1);
+        }
+
+        const char* name = (char*)(cn0.ptr);
+        const size_t index = complex_realpart(cn1.compval);
+        struct MemTag* var = mem_read_var_memtag(name, index);
+
+        cn0.type = CNT_VARPTR;
+        cn0.ptr = (void*)var;
+
+        return cn0;
+}
+
+static struct CalcNode calcnode__DECLARATOR(struct Node* a)
+{
+        switch (a->child_len) {
+        case 1: return calcnode__DECLARATOR_scalar(a);
+        case 2: return calcnode__DECLARATOR_array(a);
+        }
+
+        if (a->child_len == 0) {
+                printf("syntax err: 代入先の変数が存在しないか、不正です\n");
+                exit(1);
+        } else {
+                printf("syntac err: 代入先の変数の配列の次元が高すぎます\n");
+                exit(1);
+        }
+}
+
 struct CalcNode calcnode(struct Node* a)
 {
+        switch (a->ope) {
+        case __IDENTIFIER:              return calcnode__IDENTIFIER(a);
+        case __DECLARATOR:              return calcnode__DECLARATOR(a);
+        }
+
         struct CalcNode cn;
 
         cn = calcnode_expression(a);
