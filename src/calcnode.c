@@ -92,11 +92,56 @@ static struct CalcNode calcnode__DECLARATOR(struct Node* a)
         }
 }
 
+static struct CalcNode calcnode__ASSIGNMENT(struct Node* a)
+{
+        struct CalcNode cn0 = calcnode(node_child(a, 0));
+        if (cn0.type != CNT_VARPTR) {
+                printf("syntax err: 変数以外へ代入しようとしてます\n");
+                exit(1);
+        }
+
+        struct MemTag* cn0m = (struct MemTag*)(cn0.ptr);
+
+        struct CalcNode cn1 = calcnode(node_child(a, 1));
+        switch (cn1.type) {
+        case CNT_NOT_FOUND:
+                printf("syntax err: 代入式の右辺が存在しません\n");
+                exit(1);
+
+        case CNT_BOTTOM:
+                printf("syntax err: 代入式の右辺のこの関数は、戻り値を持たないタイプです\n");
+                exit(1);
+
+        case CNT_COMPVAL:
+                *((struct Complex*)(cn0m->address)) = cn1.compval;
+                break;
+
+        case CNT_FUNCPTR:
+                cn0m->address = cn1.ptr;
+                break;
+
+        case CNT_STRPTR:
+                printf("err: calcnode__ASSIGNMENT(), cn1\n");
+                exit(1);
+
+        case CNT_VARPTR:
+                cn0m->address = cn1.ptr;
+                break;
+
+        default:
+                printf("err: calcnode__ASSIGNMENT(), cn1.type\n");
+                exit(1);
+        }
+
+        return cn1;
+}
+
 struct CalcNode calcnode(struct Node* a)
 {
         switch (a->ope) {
         case __IDENTIFIER:              return calcnode__IDENTIFIER(a);
         case __DECLARATOR:              return calcnode__DECLARATOR(a);
+        case __ASSIGNMENT:              return calcnode__ASSIGNMENT(a);
         }
 
         struct CalcNode cn;

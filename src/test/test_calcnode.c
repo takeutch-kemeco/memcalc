@@ -96,12 +96,54 @@ void g(void)
         printf("n1[%f, %f]\n", complex_realpart(*cn1vp), complex_imagpart(*cn1vp));
 }
 
+void test_declarator(void)
+{
+        printf("\ntest_declarator\n");
+        f();
+        g();
+}
+
+void test_assignment(void)
+{
+        printf("\ntest_assignment\n");
+
+        {
+                struct Node* f0 = node_new(__ASSIGNMENT);
+
+                struct Node* n0 = create_declarator_scalar();
+
+                struct Complex* n1val = complex_new(111,222);
+                struct Node* n1 = node_new_leaf(__CONST_FLOAT, (void*)n1val);
+
+                node_link(f0, n0);
+                node_link(f0, n1);
+
+                calcnode(f0);
+        }
+
+        {
+                struct Node* f0 = node_new(__ASSIGNMENT);
+
+                struct Node* n0 = create_declarator_array();
+
+                struct Complex* n1val = complex_new(333,444);
+                struct Node* n1 = node_new_leaf(__CONST_FLOAT, (void*)n1val);
+
+                node_link(f0, n0);
+                node_link(f0, n1);
+
+                calcnode(f0);
+        }
+
+        g();
+}
+
 blMain()
 {
         mem_init();
 
-        f();
-        g();
+        test_declarator();
+        test_assignment();
 
         bl_wait(-1);
         mem_close();
