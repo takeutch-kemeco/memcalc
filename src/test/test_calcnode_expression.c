@@ -52,5 +52,7 @@ void f(void)
 
 blMain()
 {
+        mem_init();
+
         f();
 }

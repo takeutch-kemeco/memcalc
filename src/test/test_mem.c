@@ -7,11 +7,11 @@ void f(void)
 {
         char s[] = "sss";
 
-        if (mem_create_var(s, 100) == false) {
+        if (mem_create_var(s, MTT_COMPVAL, 100) == false) {
                 printf("err: mem_create_var(s, 100)\n");
         }
 
-        struct MemTag* p = mem_read_var_memtag(s, 0);
+        struct MemTag* p = mem_read_var_memtag(s, MTT_COMPVAL, 0);
 
         printf("p=[%p, %d],\t", p, *((int*)p->address));
 

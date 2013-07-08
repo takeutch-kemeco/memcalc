@@ -90,7 +90,7 @@ void jump_run(uint32_t fpos)
 %token __DECL_END
 %token __EOF
 
-%token __IDENTIFIER __DECLARATOR
+%token __IDENTIFIER __DECLARATOR __ASSIGNMENT
 
 %left __OPE_SUBST
 %left __OPE_COMPARISON __OPE_NOT_COMPARISON __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
@@ -508,10 +508,10 @@ assignment
 
 declarator
         : __IDENTIFIER {
-                $$ = mem_read_var_memtag($1, 0);
+                $$ = mem_read_var_memtag($1, MTT_COMPVAL, 0);
         }
         | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                $$ = mem_read_var_memtag($1, (size_t)complex_realpart($3));
+                $$ = mem_read_var_memtag($1, MTT_COMPVAL, (size_t)complex_realpart($3));
         }
         ;
 
@@ -662,8 +662,8 @@ lambda_assignment_arg
 
                 mem_push_overlide();
 
-                mem_create_var($1, 0);
-                struct MemTag* memtag = mem_read_var_memtag($1, 0);
+                mem_create_var($1, MTT_COMPVAL, 0);
+                struct MemTag* memtag = mem_read_var_memtag($1, MTT_COMPVAL, 0);
                 struct Complex* newvalp = (struct Complex*)(memtag->address);
                 newvalp[memtag->index] = oldval;
 
@@ -744,11 +744,11 @@ comparison_unit
 
 read_variable
         : __IDENTIFIER {
-                $$ = mem_read_var_value($1, 0);
+                $$ = mem_read_var_value($1, MTT_COMPVAL, 0);
         }
 
         | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                $$ = mem_read_var_value($1, (size_t)complex_realpart($3));
+                $$ = mem_read_var_value($1, MTT_COMPVAL, (size_t)complex_realpart($3));
         }
         ;
 

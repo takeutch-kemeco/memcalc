@@ -23,19 +23,35 @@
 #ifndef __MEM_H__
 #define __MEM_H__
 
+enum MemTagType {
+        MTT_NOT_FOUND = 0,
+        MTT_COMPVAL,
+        MTT_FUNCPTR,
+        MTT_VARPTR,
+};
+
 struct MemTag {
+        enum MemTagType type;
         void*  address;
-        size_t bytesize;
+        size_t type_bytesize;
+        size_t array_bytesize;
         size_t index;
 };
 
 void mem_init(void);
 void mem_close(void);
 
-bool mem_create_var(const char* name, const size_t index_len);
+bool mem_create_var(const char* name,
+                    const enum MemTagType type,
+                    size_t index_len);
 
-struct MemTag* mem_read_var_memtag(const char* name, const size_t index);
-struct Complex mem_read_var_value(const char* name, const size_t index);
+struct MemTag* mem_read_var_memtag(const char* name,
+                                   const enum MemTagType type,
+                                   const size_t index);
+
+struct Complex mem_read_var_value(const char* name,
+                                  const enum MemTagType type,
+                                  const size_t index);
 
 int mem_push_overlide(void);
 int mem_pop_overlide(void);

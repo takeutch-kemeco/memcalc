@@ -84,6 +84,8 @@ void f(void)
 
 blMain()
 {
+        mem_init();
+
         f();
 
         bl_wait(-1);
