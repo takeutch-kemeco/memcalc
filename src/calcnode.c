@@ -44,7 +44,7 @@ static struct CalcNode calcnode__DECLARATOR_scalar(struct Node* a)
         }
 
         const char* name = (char*)(cn0.ptr);
-        struct MemTag* var = mem_read_var_memtag(name, 0);
+        struct MemTag* var = mem_read_var_memtag(name, MTT_VARPTR, 0);
 
         cn0.type = CNT_VARPTR;
         cn0.ptr = (void*)var;
@@ -68,7 +68,7 @@ static struct CalcNode calcnode__DECLARATOR_array(struct Node* a)
 
         const char* name = (char*)(cn0.ptr);
         const size_t index = complex_realpart(cn1.compval);
-        struct MemTag* var = mem_read_var_memtag(name, index);
+        struct MemTag* var = mem_read_var_memtag(name, MTT_VARPTR, index);
 
         cn0.type = CNT_VARPTR;
         cn0.ptr = (void*)var;
