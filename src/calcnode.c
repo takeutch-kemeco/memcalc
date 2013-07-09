@@ -24,6 +24,7 @@
 #include "calcnode.h"
 #include "calcnode_expression.h"
 #include "calcnode_function.h"
+#include "calcnode_comparison.h"
 #include "memcalc.bison.h"
 
 static struct CalcNode calcnode__IDENTIFIER(struct Node* a)
@@ -154,7 +155,10 @@ struct CalcNode calcnode(struct Node* a)
         if (cn.type != CNT_NOT_FOUND)
                 return cn;
 
-        cn.type = CNT_NOT_FOUND;
+        cn = calcnode_comparison(a);
+        if (cn.type != CNT_NOT_FOUND)
+                return cn;
 
+        cn.type = CNT_NOT_FOUND;
         return cn;
 }

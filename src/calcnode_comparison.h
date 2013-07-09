@@ -1,4 +1,4 @@
-/* calcnode.h
+/* calcnode_comparison.h
  * Copyright (C) 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
@@ -16,31 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <stdio.h>
-#include <stdint.h>
 #include "node.h"
 #include "complex.h"
 
-#ifndef __CALCNODE_H__
-#define __CALCNODE_H__
+#ifndef __CALCNODE_COMPARISON_H__
+#define __CALCNODE_COMPARISON_H__
 
-enum CalcNodeType {
-        CNT_NOT_FOUND,
-        CNT_BOTTOM,
-        CNT_COMPVAL,
-        CNT_FUNCPTR,
-        CNT_STRPTR,
-        CNT_VARPTR,
-};
+struct CalcNode calcnode_comparison(struct Node* a);
 
-struct CalcNode {
-        enum CalcNodeType type;
-        struct Complex compval;
-        void* ptr;
-        struct Complex comparison_val;
-        uint64_t comparison_ope;
-};
-
-struct CalcNode calcnode(struct Node* a);
-
-#endif /* __CALCNODE_H__ */
+#endif /* __CALCNODE_COMPARISON_H__ */
