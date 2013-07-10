@@ -92,6 +92,7 @@ void jump_run(uint32_t fpos)
 
 %token __IDENTIFIER __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
 %token __SELECTION_IF __SELECTION_EXP
+%token __DECLARATION __DECLARATION_LIST __DECLARATION_BLOCK __DECLARATION_UNIT
 
 %left __OPE_SUBST
 %left __OPE_COMPARISON __OPE_NOT_COMPARISON __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
@@ -106,44 +107,40 @@ void jump_run(uint32_t fpos)
 
 %type <fpos> __DECL_END;
 %type <realval> __CONST_FLOAT
-%type <compval> expression initializer function read_variable assignment comparison lambda lambda_main exp_selection
+%type <compval> expression operation initializer function read_variable assignment comparison lambda exp_selection
 %type <comparisonval> comparison_unit
 %type <compval> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
 %type <icf> if_conditional exp_if_conditional
 %type <identifier> __IDENTIFIER lambda_head
 %type <memtag> declarator
-%start translation_unit
+
+%start syntax_tree
 
 %%
 
-translation_unit
+syntax_tree
+        : declaration_list
+
+declaration_list
         : declaration
-        | translation_unit declaration
-        ;
+        | declaration declaration_list
 
 declaration
         : declaration_unit
-        | declaration_unit declaration
         | declaration_block
-        | declaration_block declaration
         ;
 
 declaration_block
-        : __BLOCK_BEGIN declaration __BLOCK_END
+        : __BLOCK_BEGIN declaration_list __BLOCK_END
         | __BLOCK_BEGIN __BLOCK_END
         ;
 
 declaration_unit
         : __DECL_END
-
         | selection
-
         | function __DECL_END
-
         | expression __DECL_END
-
         | assignment __DECL_END
-
         | jump
 
         | error __DECL_END {
@@ -517,18 +514,20 @@ declarator
         ;
 
 initializer
-        : assignment {
-                $$ = $1;
-        }
-        | expression {
-                $$ = $1;
-        }
-        | function {
-                $$ = $1;
-        }
+        : assignment
+        | expression
+        | function
         ;
 
 expression
+        : operation
+        | read_variable
+        | comparison
+        | exp_selection
+        | lambda
+        ;
+
+operation
         : __CONST_FLOAT {
                 $$ = complex_constructor($1, 0);
         }
@@ -559,10 +558,6 @@ expression
 
         | expression __OPE_COMPLEX_POLAR expression {
                 $$ = complex_mk_polar(complex_constructor(complex_realpart($1), complex_realpart($3)));
-        }
-
-        | read_variable {
-                $$ = $1;
         }
 
         | expression __OPE_ADD expression {
@@ -625,26 +620,7 @@ expression
                 $$ = $2;
         }
 
-        | comparison {
-                $$ = $1;
-        }
-
-        | exp_selection {
-                $$ = $1;
-        }
-
-        | lambda {
-                $$ = $1;
-        }
-        ;
-
 lambda
-        : lambda_main {
-                $$ = $1;
-        }
-        ;
-
-lambda_main
         : lambda_assignment_arg __COLON initializer {
                 $$ = $3;
 

@@ -74,9 +74,8 @@ void jump_run(uint32_t fpos)
 %token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
 %token __STATE_EXP_IF __STATE_EXP_ELSE
-%token __STATE_GOTO __STATE_GOSUB __STATE_RETURN
+%token __OPE_GOTO __OPE_GOSUB __OPE_RETURN __OPE_LABEL
 %token __CONST_FLOAT
-%token __OPE_LAMBDA
 %token __OPE_PLUS __OPE_MINUS
 %token __OPE_MUL __OPE_DIV __OPE_MOD
 %token __OPE_LSHIFT __OPE_RSHIFT
@@ -92,9 +91,12 @@ void jump_run(uint32_t fpos)
 %token __EOF
 
 %token __EXPRESSION_LIST
-%token __IDENTIFIER __IDENTIFIER_INDEX __IDENTIFIER_LIST
+%token __IDENTIFIER
 %token __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
 %token __SELECTION_IF __SELECTION_EXP
+%token __DECLARATION __DECLARATION_LIST __DECLARATION_BLOCK __DECLARATION_UNIT
+%token __GOTO __GOSUB __RETURN __LABEL
+%token __LAMBDA
 
 %left __OPE_SUBST
 %left __OPE_COMPARISON __OPE_NOT_COMPARISON __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
@@ -108,9 +110,10 @@ void jump_run(uint32_t fpos)
 %left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
 %type <realval> __CONST_FLOAT
-%type <node> translation_unit declaration declaration_block declaration_unit
-%type <node> expression expression_list
+%type <node> declaration declaration_block declaration_unit declaration_list
+%type <node> expression operation
 %type <node> function lambda
+%type <node> jump label
 %type <node> assignment declarator initializer read_variable
 %type <node> comparison comparison_unit selection_if selection_exp
 
@@ -126,25 +129,34 @@ void jump_run(uint32_t fpos)
 
 %type <identifier> __IDENTIFIER
 
-%start translation_unit
+%start syntax_tree
 
 %%
 
-translation_unit
-        : declaration
-        | translation_unit declaration
+syntax_tree
+        : declaration_list
         ;
+
+declaration_list
+        : declaration
+        | declaration declaration_list
 
 declaration
         : declaration_unit
-        | declaration_unit declaration
         | declaration_block
-        | declaration_block declaration
         ;
 
 declaration_block
-        : __BLOCK_BEGIN declaration __BLOCK_END
-        | __BLOCK_BEGIN __BLOCK_END
+        : __BLOCK_BEGIN declaration_list __BLOCK_END {
+                struct Node* tmp = node_new(__DECLARATION_BLOCK);
+                node_link(tmp, $2);
+                $$ = tmp;
+        }
+
+        | __BLOCK_BEGIN __BLOCK_END {
+                struct Node* tmp = node_new(__DECLARATION_BLOCK);
+                $$ = tmp;
+        }
         ;
 
 declaration_unit
@@ -153,19 +165,11 @@ declaration_unit
                 $$ = tmp;
         }
 
-        | selection_if {
-                $$ = $1;
-        }
-
-        | expression __DECL_END {
-                $$ = $1;
-        }
-
-        | assignment __DECL_END {
-                $$ = $1;
-        }
-
-        | jump
+        | selection_if
+        | expression __DECL_END
+        | assignment __DECL_END
+        | jump __DECL_END
+        | label __DECL_END
 
         | error __DECL_END {
                 yyerrok;
@@ -611,20 +615,20 @@ declarator
         ;
 
 initializer
-        : assignment {
-                $$ = $1;
-        }
-        | expression {
-                $$ = $1;
-        }
-        ;
-
-expression_list
-        : expression
-        | expression_list expression
+        : assignment
+        | expression
         ;
 
 expression
+        : operation
+        | read_variable
+        | comparison
+        | selection_exp
+        | function
+        | lambda
+        ;
+
+operation
         : __CONST_FLOAT {
                 struct Complex* tmp = complex_new($1, 0);
                 $$ = node_new_leaf(__CONST_FLOAT, tmp);
@@ -672,10 +676,6 @@ expression
                 node_link(tmp, $1);
                 node_link(tmp, $3);
                 $$ = tmp;
-        }
-
-        | read_variable {
-                $$ = $1;
         }
 
         | expression __OPE_ADD expression {
@@ -777,25 +777,6 @@ expression
                 $$ = $2;
         }
 
-        | comparison {
-                $$ = $1;
-        }
-
-        | selection_exp {
-                $$ = $1;
-        }
-
-        | function {
-                $$ = $1;
-        }
-
-        | lambda {
-                $$ = $1;
-        }
-        ;
-
-
-
 lambda
         : __LB __BACKSLASH __IDENTIFIER __COLON initializer __RB {
                 char* iden_text = malloc(sizeof($3) + 1);
@@ -804,7 +785,7 @@ lambda
                 struct Node* iden = node_new(__IDENTIFIER);
                 node_link(iden, (struct Node*)iden_text);
 
-                struct Node* tmp = node_new(__OPE_LAMBDA);
+                struct Node* tmp = node_new(__LAMBDA);
                 node_link(tmp, iden);
                 node_link(tmp, $5);
                 $$ = tmp;
@@ -879,12 +860,9 @@ read_variable
                 char* iden_text = malloc(sizeof($1) + 1);
                 strcpy(iden_text, $1);
 
-                struct Node* index = node_new(__IDENTIFIER_INDEX);
-                node_link(index, $3);
-
                 struct Node* tmp = node_new(__IDENTIFIER);
                 node_link(tmp, (struct Node*)iden_text);
-                node_link(tmp, index);
+                node_link(tmp, $3);
                 $$ = tmp;
         }
         ;
@@ -913,40 +891,38 @@ selection_exp
                 node_link(tmp, $5);
                 $$ = tmp;
         }
+        ;
+
+label
+        : __OPE_LABEL __IDENTIFIER {
+                char* iden_text = malloc(sizeof($2) + 1);
+                strcpy(iden_text, $2)
+
+                struct Node* tmp = node_new_leaf(__RETURN, iden_text);
+                $$ = tmp;
+        }
+        ;
 
 jump
-        : __STATE_GOTO __IDENTIFIER __DECL_END {
-                uint32_t fpos = jmptbl_seek($2);
-                if (fpos == -1) {
-                        printf("\n構文エラー : goto で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
-                        exit(1);
-                }
+        : __OPE_GOTO __IDENTIFIER {
+                char* iden_text = malloc(sizeof($2) + 1);
+                strcpy(iden_text, $2);
 
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
+                struct Node* tmp = node_new_leaf(__GOTO, iden_text);
+                $$ = tmp;
         }
 
-        | __STATE_GOSUB __IDENTIFIER __DECL_END {
-                uint32_t fpos = jmptbl_seek($2);
-                if (fpos == -1) {
-                        printf("\n構文エラー : gosub で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
-                        exit(1);
-                }
+        | __OPE_GOSUB __IDENTIFIER {
+                char* iden_text = malloc(sizeof($2) + 1);
+                strcpy(iden_text, $2);
 
-                pc_push(yycurbyte);
-
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
+                struct Node* tmp = node_new_leaf(__GOSUB, iden_text);
+                $$ = tmp;
         }
 
-        | __STATE_RETURN __DECL_END {
-                const uint64_t fpos = pc_pop();
-
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
+        | __OPE_RETURN {
+                struct Node* tmp = node_new(__RETURN);
+                $$ = tmp;
         }
         ;
 
