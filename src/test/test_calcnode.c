@@ -138,13 +138,75 @@ void test_assignment(void)
         g();
 }
 
+struct Node* create_selection_if(void)
+{
+        struct Node* f0 = node_new(__SELECTION_IF);
+
+        struct Complex* n0val = complex_new(1, 0);
+        struct Node* n0 = node_new_leaf(__CONST_FLOAT, (void*)n0val);
+
+        struct Complex* n1val = complex_new(2, 0);
+        struct Node* n1 = node_new_leaf(__CONST_FLOAT, (void*)n1val);
+
+        struct Complex* n2val = complex_new(3, 0);
+        struct Node* n2 = node_new_leaf(__CONST_FLOAT, (void*)n2val);
+
+        node_link(f0, n0);
+        node_link(f0, n1);
+        node_link(f0, n2);
+
+        return f0;
+}
+
+struct Node* create_selection_exp(void)
+{
+        struct Node* n0 = create_selection_if();
+        n0->ope = __SELECTION_EXP;
+        return n0;
+}
+
+void test_selection_if(void)
+{
+        printf("\ntest_selection_if\n");
+
+        struct Node* n0 = create_selection_if();
+        struct CalcNode cn0 = calcnode(n0);
+
+        switch (cn0.type) {
+        case CNT_FUNCPTR:
+                {
+                        struct CalcNode cn1 = calcnode((struct Node*)(cn0.ptr));
+                        printf("CNT_FUNCPTR, val:[%f, %f]\n", cn1.compval.re, cn1.compval.im);
+                }
+                break;
+
+        case CNT_BOTTOM:
+                printf("CNT_BOTTOM\n");
+
+        default:
+                printf("err: CNT_?\n");
+                break;
+        }
+}
+
+void test_selection_exp(void)
+{
+        printf("\ntest_selection_exp\n");
+
+        struct Node* n0 = create_selection_exp();
+        struct CalcNode cn0 = calcnode(n0);
+
+        printf("cn0.compval:[%f, %f]\n", cn0.compval.re, cn0.compval.im);
+}
+
 blMain()
 {
         mem_init();
 
         test_declarator();
         test_assignment();
+        test_selection_if();
+        test_selection_exp();
 
-        bl_wait(-1);
         mem_close();
 }

@@ -94,6 +94,7 @@ void jump_run(uint32_t fpos)
 %token __EXPRESSION_LIST
 %token __IDENTIFIER __IDENTIFIER_INDEX __IDENTIFIER_LIST
 %token __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
+%token __SELECTION_IF __SELECTION_EXP
 
 %left __OPE_SUBST
 %left __OPE_COMPARISON __OPE_NOT_COMPARISON __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
@@ -111,7 +112,7 @@ void jump_run(uint32_t fpos)
 %type <node> expression expression_list
 %type <node> function lambda
 %type <node> assignment declarator initializer read_variable
-%type <node> comparison comparison_unit selection exp_selection
+%type <node> comparison comparison_unit selection_if selection_exp
 
 %type <node> func_print func_putpixel func_putchar
 
@@ -152,7 +153,7 @@ declaration_unit
                 $$ = tmp;
         }
 
-        | selection {
+        | selection_if {
                 $$ = $1;
         }
 
@@ -780,7 +781,7 @@ expression
                 $$ = $1;
         }
 
-        | exp_selection {
+        | selection_exp {
                 $$ = $1;
         }
 
@@ -888,32 +889,25 @@ read_variable
         }
         ;
 
-selection
+selection_if
         : __STATE_IF expression declaration_block {
-                struct Node* tmp = node_new(__STATE_IF);
+                struct Node* tmp = node_new(__SELECTION_IF);
                 node_link(tmp, $2);
                 node_link(tmp, $3);
                 $$ = tmp;
         }
 
         | __STATE_IF expression declaration_block __STATE_ELSE declaration_block {
-                struct Node* tmp = node_new(__STATE_IF);
+                struct Node* tmp = node_new(__SELECTION_IF);
                 node_link(tmp, $2);
                 node_link(tmp, $3);
                 node_link(tmp, $5);
                 $$ = tmp;
         }
 
-exp_selection
-        : expression __STATE_EXP_IF expression {
-                struct Node* tmp = node_new(__STATE_EXP_IF);
-                node_link(tmp, $1);
-                node_link(tmp, $3);
-                $$ = tmp;
-        }
-
-        | expression __STATE_EXP_IF expression __STATE_EXP_ELSE expression {
-                struct Node* tmp = node_new(__STATE_EXP_IF);
+selection_exp
+        : expression __STATE_EXP_IF expression __STATE_EXP_ELSE expression {
+                struct Node* tmp = node_new(__SELECTION_EXP);
                 node_link(tmp, $1);
                 node_link(tmp, $3);
                 node_link(tmp, $5);
