@@ -48,7 +48,7 @@ extern int yycurline;
 extern int yycurbyte;
 extern int yynextbyte;
 
-void jump_run(uint32_t fpos)
+void jump_run(const int64_t fpos)
 {
         if (fpos != -1) {
                 fseek(yyin, fpos, SEEK_SET);
@@ -626,7 +626,7 @@ lambda
 
                 mem_pop_overlide();
 
-                const uint64_t fpos = pc_pop();
+                const int64_t fpos = pc_pop();
                 jump_run(fpos);
                 yyclearin;
                 yycurbyte = yynextbyte = fpos;
@@ -644,7 +644,7 @@ lambda_assignment_arg
                 struct Complex* newvalp = (struct Complex*)(memtag->address);
                 newvalp[memtag->index] = oldval;
 
-                const uint64_t fpos = pc_pop();
+                const int64_t fpos = pc_pop();
                 pc_push(yycurbyte);     /* 引数の次の位置（lambda関数の終了後に飛ぶ位置）を保存 */
 #ifdef DEBUG
 printf("lambda_assignment_arg(), 引数の次の位置（lambda関数の終了後に飛ぶ位置）を保存 [%d] \n",  yycurbyte);
@@ -767,7 +767,7 @@ exp_selection
 
 jump
         : __STATE_GOTO __IDENTIFIER __DECL_END {
-                uint32_t fpos = jmptbl_seek($2);
+                const int64_t fpos = jmptbl_seek_fpos($2);
                 if (fpos == -1) {
                         printf("\n構文エラー : goto で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
                         exit(1);
@@ -779,7 +779,7 @@ jump
         }
 
         | __STATE_GOSUB __IDENTIFIER __DECL_END {
-                uint32_t fpos = jmptbl_seek($2);
+                const int64_t fpos = jmptbl_seek_fpos($2);
                 if (fpos == -1) {
                         printf("\n構文エラー : gosub で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
                         exit(1);
@@ -793,7 +793,7 @@ jump
         }
 
         | __STATE_RETURN __DECL_END {
-                const uint64_t fpos = pc_pop();
+                const int64_t fpos = pc_pop();
 
                 jump_run(fpos);
                 yyclearin;

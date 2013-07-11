@@ -1,5 +1,5 @@
 /* jmptbl.h
- * Copyright (C) 2012 Takeutch Kemeco
+ * Copyright (C) 2012, 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,15 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <stdio.h>
+#include <stdint.h>
 
 #ifndef __JMPTBL_H__
 #define __JMPTBL_H__
 
+struct JmpTblUnit {
+        char* name;
+        size_t name_len;
+        int64_t fpos;
+        int64_t pcpos;
+        struct Node* node;
+};
+
 void jmptbl_init(void);
 void jmptbl_close(void);
 
-long jmptbl_seek(char* name);
-void jmptbl_add(char* name, long pos);
+int64_t jmptbl_seek_fpos(char* name);
+int64_t jmptbl_seek_pcpos(char* name);
+struct Node* jmptbl_seek_node(char* name);
+
+void jmptbl_add_fpos(char* name, const int64_t fpos);
+void jmptbl_add_pcpos(char* name, const int64_t pcpos);
+void jmptbl_add_node(char* name, struct Node* node);
 
 #endif /* __JMPTBL_H__ */

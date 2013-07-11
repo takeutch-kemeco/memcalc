@@ -23,7 +23,7 @@ static struct Stack* pc_stack;
 
 static void* pc_unit_constructor(void)
 {
-        return malloc(sizeof(uint64_t));
+        return malloc(sizeof(int64_t));
 }
 
 static int pc_unit_destructor(void* a)
@@ -34,7 +34,7 @@ static int pc_unit_destructor(void* a)
 
 static int pc_unit_copy(void* dst, void* src)
 {
-        *((uint64_t*)dst) = *((uint64_t*)src);
+        *((int64_t*)dst) = *((int64_t*)src);
         return 0;
 }
 
@@ -48,14 +48,14 @@ void pc_close(void)
         stack_free(pc_stack);
 }
 
-void pc_push(const uint64_t fpos)
+void pc_push(const int64_t fpos)
 {
         stack_push(pc_stack, (void*)&fpos);
 }
 
-uint64_t pc_pop(void)
+int64_t pc_pop(void)
 {
-        uint64_t tmp;
+        int64_t tmp;
         stack_pop(pc_stack, (void*)&tmp);
         return tmp;
 }

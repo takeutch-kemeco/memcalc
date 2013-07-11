@@ -25,7 +25,7 @@
 #include "jmptbl.h"
 #include "memcalc.bison.h"
 
-long create_jmptbl_ccount;
+int64_t create_jmptbl_ccount;
 
 int skip_declaration_block_depth;
 
@@ -72,10 +72,13 @@ static void update_line_yycurbyte(void)
 %%
 
 <create_jmptbl>[:][_a-zA-Z][_0-9a-zA-Z]* {
-        char* tmp = yytext + 1;
+        char* tmpA = yytext + 1;
+
+        char* tmpB = malloc(strlen(tmpA) + 1);
+        strcpy(tmpB, tmpA);
 
         create_jmptbl_ccount += yyleng;
-        jmptbl_add(tmp, create_jmptbl_ccount);
+        jmptbl_add_fpos(tmpB, create_jmptbl_ccount);
 }
 
 <create_jmptbl>.|[\n\r] {
