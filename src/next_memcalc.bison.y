@@ -1,5 +1,5 @@
-/* memcalc.bison.y
- * Copyright (C) 2012 Takeutch Kemeco
+/* next_memcalc.bison.y
+ * Copyright (C) 2012, 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -42,19 +42,6 @@ void yyerror(const char *s)
 
 extern FILE* yyin;
 extern FILE* yyout;
-
-extern int yycurline;
-
-extern int yycurbyte;
-extern int yynextbyte;
-
-void jump_run(uint32_t fpos)
-{
-        if (fpos != -1) {
-                fseek(yyin, fpos, SEEK_SET);
-                yyrestart(yyin);
-        }
-}
 
 %}
 
@@ -134,12 +121,32 @@ void jump_run(uint32_t fpos)
 %%
 
 syntax_tree
-        : declaration_list
+        : declaration_list {
+                calcnode($1);
+        }
         ;
 
 declaration_list
-        : declaration
-        | declaration declaration_list
+        : declaration {
+                struct Node* n0 = node_child($1, 0);
+                if (n0->ope == __LABEL) {
+                        char* iden_txt = (char*)node_child(n0, 0);
+                        printf("<declaration> __LABEL:[%s]\n", iden_text);
+
+                        jmptbl_add_node(iden_txt, n0);
+                }
+        }
+
+        | declaration declaration_list {
+                struct Node* n0 = node_child($1, 0);
+                if (n0->ope == __LABEL) {
+                        char* iden_txt = (char*)node_child(n0, 0);
+                        printf("<declaration declaration_list> __LABEL:[%s]\n", iden_text);
+
+                        jmptbl_add_node(iden_txt, $2);
+                }
+        }
+        ;
 
 declaration
         : declaration_unit
@@ -898,7 +905,7 @@ label
                 char* iden_text = malloc(sizeof($2) + 1);
                 strcpy(iden_text, $2)
 
-                struct Node* tmp = node_new_leaf(__RETURN, iden_text);
+                struct Node* tmp = node_new_leaf(__LABEL, iden_text);
                 $$ = tmp;
         }
         ;
