@@ -73,7 +73,7 @@ void jump_run(const int64_t fpos)
 %token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
 %token __STATE_EXP_IF __STATE_EXP_ELSE
-%token __STATE_GOTO __STATE_GOSUB __STATE_RETURN
+%token __OPE_GOTO __OPE_GOSUB __OPE_RETURN __OPE_LABEL
 %token __CONST_FLOAT
 %token __OPE_PLUS __OPE_MINUS
 %token __OPE_MUL __OPE_DIV __OPE_MOD
@@ -93,6 +93,8 @@ void jump_run(const int64_t fpos)
 %token __IDENTIFIER __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
 %token __SELECTION_IF __SELECTION_EXP
 %token __DECLARATION __DECLARATION_LIST __DECLARATION_BLOCK __DECLARATION_UNIT
+%token __GOTO __GOSUB __RETURN __LABEL
+%token __LAMBDA
 
 %left __OPE_SUBST
 %left __OPE_COMPARISON __OPE_NOT_COMPARISON __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
@@ -766,7 +768,7 @@ exp_selection
         ;
 
 jump
-        : __STATE_GOTO __IDENTIFIER __DECL_END {
+        : __OPE_GOTO __IDENTIFIER __DECL_END {
                 const int64_t fpos = jmptbl_seek_fpos($2);
                 if (fpos == -1) {
                         printf("\n構文エラー : goto で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
@@ -778,7 +780,7 @@ jump
                 yycurbyte = yynextbyte = fpos;
         }
 
-        | __STATE_GOSUB __IDENTIFIER __DECL_END {
+        | __OPE_GOSUB __IDENTIFIER __DECL_END {
                 const int64_t fpos = jmptbl_seek_fpos($2);
                 if (fpos == -1) {
                         printf("\n構文エラー : gosub で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
@@ -792,7 +794,7 @@ jump
                 yycurbyte = yynextbyte = fpos;
         }
 
-        | __STATE_RETURN __DECL_END {
+        | __OPE_RETURN __DECL_END {
                 const int64_t fpos = pc_pop();
 
                 jump_run(fpos);

@@ -233,9 +233,9 @@ static void update_line_yycurbyte(void)
 <main_process>"["       update_return(__ARRAY_BEGIN);
 <main_process>"]"       update_return(__ARRAY_END);
 
-<main_process>"goto"    update_return(__STATE_GOTO);
-<main_process>"gosub"   update_return(__STATE_GOSUB);
-<main_process>"return"  update_return(__STATE_RETURN);
+<main_process>"goto"    update_return(__OPE_GOTO);
+<main_process>"gosub"   update_return(__OPE_GOSUB);
+<main_process>"return"  update_return(__OPE_RETURN);
 
 <main_process>"print"           update_return(__FUNC_PRINT);
 <main_process>"putpixel"        update_return(__FUNC_PUTPIXEL);

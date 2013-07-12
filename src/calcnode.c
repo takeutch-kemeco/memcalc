@@ -201,14 +201,51 @@ static struct CalcNode calcnode__SELECTION_EXP(struct Node* a)
         return cnx;
 }
 
+static struct CalcNode calcnode__DECLARATION_LIST(struct Node* a)
+{
+        int i;
+        for (i = 0; i < a->child_len; i++)
+                calcnode(node_child(a, i));
+
+        struct CalcNode cn_ret = {.type = CNT_BOTTOM};
+        return cn_ret;
+}
+
+static struct CalcNode calcnode__DECLARATION_BLOCK(struct Node* a)
+{
+        mem_push_overlide();
+
+        int i;
+        for (i = 0; i < a->child_len; i++)
+                calcnode(node_child(a, i));
+
+        mem_pop_overlide();
+
+        struct CalcNode cn_ret = {.type = CNT_BOTTOM};
+        return cn_ret;
+}
+
+static struct CalcNode calcnode__LABEL(struct Node* a)
+{
+        struct CalcNode cn_ret = {.type = CNT_BOTTOM};
+        return cn_ret;
+}
+
+static int xxx = 0;
+
 struct CalcNode calcnode(struct Node* a)
 {
+        printf("node address:[%p], xxx:[%d]\n", (void*)a, xxx++);
+
         switch (a->ope) {
         case __IDENTIFIER:              return calcnode__IDENTIFIER(a);
         case __DECLARATOR:              return calcnode__DECLARATOR(a);
         case __ASSIGNMENT:              return calcnode__ASSIGNMENT(a);
         case __SELECTION_IF:            return calcnode__SELECTION_IF(a);
         case __SELECTION_EXP:           return calcnode__SELECTION_EXP(a);
+        case __DECLARATION_LIST:        return calcnode__DECLARATION_LIST(a);
+        case __DECLARATION_BLOCK:       return calcnode__DECLARATION_BLOCK(a);
+        case __LABEL:                   return calcnode__LABEL(a);
         }
 
         struct CalcNode cn;
