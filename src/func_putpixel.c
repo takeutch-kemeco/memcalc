@@ -16,7 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <blike.h>
+#include <blike0.h>
+#include <math.h>
 #include <stdint.h>
 
 static void hsv_to_rgb(double* colR, double* colG, double* colB,

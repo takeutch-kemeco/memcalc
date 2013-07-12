@@ -1,5 +1,5 @@
 /* memcalc.flex.l
- * Copyright (C) 2012 Takeutch Kemeco
+ * Copyright (C) 2012, 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,12 +24,6 @@
 #include "mem.h"
 #include "jmptbl.h"
 #include "memcalc.bison.h"
-
-int64_t create_jmptbl_ccount;
-
-int skip_declaration_block_depth;
-
-int skip_lambda_body_block_depth;
 
 int yycurline = 1;
 
@@ -61,28 +55,14 @@ static void update_line_yycurbyte(void)
 
 %}
 
-%x create_jmptbl
+%x pre_process
 %x main_process
 %x main_process_comment
 %x main_process_char
-%x main_process_skip_declaration_block
-%x main_process_skip_bracket_block
-%x main_process_skip_lambda_body_block
 
 %%
 
-<create_jmptbl>[:][_a-zA-Z][_0-9a-zA-Z]* {
-        char* tmpA = yytext + 1;
-
-        char* tmpB = malloc(strlen(tmpA) + 1);
-        strcpy(tmpB, tmpA);
-
-        create_jmptbl_ccount += yyleng;
-        jmptbl_add_fpos(tmpB, create_jmptbl_ccount);
-}
-
-<create_jmptbl>.|[\n\r] {
-        create_jmptbl_ccount += yyleng;
+<pre_process>. {
 }
 
 <main_process>[/][*] {
@@ -299,76 +279,14 @@ static void update_line_yycurbyte(void)
 
 <main_process><<EOF>>   return(__EOF);
 
-<main_process_skip_declaration_block>[{] {
-        if (skip_declaration_block_depth++ == 0)
-                update_return(__BLOCK_BEGIN);
-}
-
-<main_process_skip_declaration_block>[}] {
-        if (--skip_declaration_block_depth == 0) {
-                BEGIN(main_process);
-                update_return(__BLOCK_END);
-        }
-}
-
-<main_process_skip_declaration_block>[\n] {
-        update_line_yycurbyte();
-}
-
-<main_process_skip_declaration_block>. {
-        update_yycurbyte();
-}
-
-<main_process_skip_lambda_body_block>[(] {
-        update_yycurbyte();
-        skip_lambda_body_block_depth++;
-}
-
-<main_process_skip_lambda_body_block>[)] {
-        update_yycurbyte();
-
-        if (skip_lambda_body_block_depth == 0)
-                BEGIN(main_process);
-        else
-                skip_lambda_body_block_depth--;
-}
-
-<main_process_skip_lambda_body_block>[\n] {
-        update_line_yycurbyte();
-}
-
-<main_process_skip_lambda_body_block>. {
-        update_yycurbyte();
-}
-
 %%
 
-void start_create_jmptbl(void)
+void start_pre_process(void)
 {
-        BEGIN(create_jmptbl);
+        BEGIN(pre_process);
 }
 
 void start_main_process(void)
 {
         BEGIN(main_process);
-}
-
-void skip_declaration_block(void)
-{
-        if (strcmp(yytext, "{") == 0)
-                skip_declaration_block_depth = 1;
-        else
-                skip_declaration_block_depth = 0;
-
-        BEGIN(main_process_skip_declaration_block);
-}
-
-void skip_lambda_body_block(void)
-{
-        if (strcmp(yytext, "(") == 0)
-                skip_lambda_body_block_depth = 1;
-        else
-                skip_lambda_body_block_depth = 0;
-
-        BEGIN(main_process_skip_lambda_body_block);
 }

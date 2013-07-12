@@ -1,5 +1,5 @@
-/* memcalc.bison.y
- * Copyright (C) 2012 Takeutch Kemeco
+/* next_memcalc.bison.y
+ * Copyright (C) 2012, 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,6 +30,8 @@
 #include "jmptbl.h"
 #include "pc.h"
 #include "node.h"
+#include "node_debug.h"
+#include "calcnode.h"
 
 #include "func_putpixel.h"
 
@@ -43,32 +45,20 @@ void yyerror(const char *s)
 extern FILE* yyin;
 extern FILE* yyout;
 
-extern int yycurline;
-
-extern int yycurbyte;
-extern int yynextbyte;
-
-void jump_run(const int64_t fpos)
-{
-        if (fpos != -1) {
-                fseek(yyin, fpos, SEEK_SET);
-                yyrestart(yyin);
-        }
-}
-
 %}
 
 %union {
-        fpos_t fpos;
         double realval;
-        struct Complex compval;
         char identifier[0x80];
-        struct MemTag* memtag;
-        uint32_t icf;
-        struct Comparison comparisonval;
+        struct Node* node;
 }
 
-%token __FUNC_BL_PUTC __FUNC_BL_PUTS1 __FUNC_BL_PRINTF __FUNC_BL_SCANF __FUNC_BL_MALLOC __FUNC_BL_RAND __FUNC_BL_SRAND __FUNC_BL_GETS __FUNC_BL_OPENWIN __FUNC_BL_SETCOL __FUNC_BL_SETBCOL __FUNC_BL_RGB __FUNC_BL_ICOL __FUNC_BL_FLSHWIN __FUNC_BL_GETGRPB __FUNC_BL_SETPIX __FUNC_BL_FILLRECT __FUNC_BL_DRAWRECT __FUNC_BL_DRAWLINE __FUNC_BL_RND __FUNC_BL_WAIT __FUNC_BL_COLOR __FUNC_BL_LOCATE __FUNC_BL_GETPIX __FUNC_BL_WAITNF __FUNC_BL_INKEY1 __FUNC_BL_CLS __FUNC_BL_INPTINT __FUNC_BL_INPTFLOT __FUNC_BL_SETMODE __FUNC_BL_FILLOVAL __FUNC_BL_DRAWSTR __FUNC_BL_OPENVWIN __FUNC_BL_SLCTWIN __FUNC_BL_COPYRCT0 __FUNC_BL_COPYRCT1 __FUNC_BL_DRAWPTRN_D __FUNC_BL_DRAWPTRN_R
+%token __FUNC_BL_PUTC __FUNC_BL_PUTS1 __FUNC_BL_PRINTF __FUNC_BL_SCANF __FUNC_BL_MALLOC __FUNC_BL_RAND __FUNC_BL_SRAND
+%token __FUNC_BL_GETS __FUNC_BL_OPENWIN __FUNC_BL_SETCOL __FUNC_BL_SETBCOL __FUNC_BL_RGB __FUNC_BL_ICOL __FUNC_BL_FLSHWIN
+%token __FUNC_BL_GETGRPB __FUNC_BL_SETPIX __FUNC_BL_FILLRECT __FUNC_BL_DRAWRECT __FUNC_BL_DRAWLINE __FUNC_BL_RND
+%token __FUNC_BL_WAIT __FUNC_BL_COLOR __FUNC_BL_LOCATE __FUNC_BL_GETPIX __FUNC_BL_WAITNF __FUNC_BL_INKEY1 __FUNC_BL_CLS
+%token __FUNC_BL_INPTINT __FUNC_BL_INPTFLOT __FUNC_BL_SETMODE __FUNC_BL_FILLOVAL __FUNC_BL_DRAWSTR __FUNC_BL_OPENVWIN
+%token __FUNC_BL_SLCTWIN __FUNC_BL_COPYRCT0 __FUNC_BL_COPYRCT1 __FUNC_BL_DRAWPTRN_D __FUNC_BL_DRAWPTRN_R
 
 %token __FUNC_PRINT __FUNC_PUTPIXEL __FUNC_PUTCHAR
 %token __STATE_IF __STATE_ELSE
@@ -78,8 +68,7 @@ void jump_run(const int64_t fpos)
 %token __OPE_PLUS __OPE_MINUS
 %token __OPE_MUL __OPE_DIV __OPE_MOD
 %token __OPE_LSHIFT __OPE_RSHIFT
-%token __OPE_OR __OPE_AND __OPE_XOR __OPE_NOT
-%token __OPE_COMPARISON __OPE_NOT_COMPARISON
+%token __OPE_OR __OPE_AND __OPE_XOR __OPE_NOT __OPE_COMPARISON __OPE_NOT_COMPARISON
 %token __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
 %token __OPE_SUBST
 
@@ -90,9 +79,11 @@ void jump_run(const int64_t fpos)
 %token __DECL_END
 %token __EOF
 
-%token __IDENTIFIER __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST __EXPRESSION_LIST
+%token __EXPRESSION_LIST
+%token __IDENTIFIER
+%token __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
 %token __SELECTION_IF __SELECTION_EXP
-%token __DECLARATION __DECLARATION_LIST __DECLARATION_BLOCK __DECLARATION_UNIT
+%token __DECLARATION_LIST __DECLARATION_BLOCK
 %token __GOTO __GOSUB __RETURN __LABEL
 %token __LAMBDA
 
@@ -107,50 +98,98 @@ void jump_run(const int64_t fpos)
 %left __OPE_PLUS __OPE_MINUS
 %left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
-%type <fpos> __DECL_END;
 %type <realval> __CONST_FLOAT
-%type <compval> expression operation initializer function read_variable assignment comparison lambda exp_selection
-%type <comparisonval> comparison_unit
-%type <compval> func_bl_rgb func_bl_iCol func_bl_rnd func_bl_getPix func_bl_inkey1 func_bl_openVWin
-%type <icf> if_conditional exp_if_conditional
-%type <identifier> __IDENTIFIER lambda_head
-%type <memtag> declarator
+%type <node> declaration declaration_block declaration_list
+%type <node> expression operation
+%type <node> function lambda
+%type <node> jump label
+%type <node> assignment declarator initializer read_variable
+%type <node> comparison comparison_unit selection_if selection_exp
+
+%type <node> func_print func_putpixel func_putchar
+
+%type <node> func_blike
+%type <node> func_bl_putc func_bl_puts1 func_bl_printf func_bl_scanf func_bl_malloc func_bl_rand func_bl_srand
+%type <node> func_bl_gets func_bl_openWin func_bl_setCol func_bl_setBCol func_bl_rgb func_bl_iCol func_bl_flshWin
+%type <node> func_bl_getGrpB func_bl_setPix func_bl_fillRect func_bl_drawRect func_bl_drawLine func_bl_rnd
+%type <node> func_bl_wait func_bl_color func_bl_locate func_bl_getPix func_bl_waitNF func_bl_inkey1 func_bl_cls
+%type <node> func_bl_inptInt func_bl_inptFlot func_bl_setMode func_bl_fillOval func_bl_drawStr func_bl_openVWin
+%type <node> func_bl_slctWin func_bl_copyRct0 func_bl_copyRct1 func_bl_drawPtrn_d func_bl_drawPtrn_r
+
+%type <identifier> __IDENTIFIER
 
 %start syntax_tree
 
 %%
 
 syntax_tree
-        : declaration_list
+        : declaration_list __EOF {
+#ifdef DEBUG_NODE
+                node_print_tree($1);
+#endif /* DEBUG_NODE */
+                calcnode($1);
+                YYACCEPT;
+        }
+        ;
 
 declaration_list
-        : declaration
-        | declaration declaration_list
+        : declaration {
+                struct Node* n0 = node_child($1, 0);
+                if (n0->ope == __LABEL) {
+                        char* iden_txt = (char*)node_child(n0, 0);
+                        printf("<declaration> __LABEL:[%s]\n", iden_txt);
+
+                        jmptbl_add_node(iden_txt, n0);
+                }
+
+                $$ = $1;
+        }
+
+        | declaration declaration_list {
+                struct Node* n0 = node_child($1, 0);
+                if (n0->ope == __LABEL) {
+                        char* iden_txt = (char*)node_child(n0, 0);
+                        printf("<declaration declaration_list> __LABEL:[%s]\n", iden_txt);
+
+                        jmptbl_add_node(iden_txt, $2);
+                }
+
+                struct Node* f0 = node_new(__DECLARATION_LIST);
+                node_link(f0, $1);
+                node_link(f0, $2);
+
+                $$ = f0;
+        }
+        ;
 
 declaration
-        : declaration_unit
-        | declaration_block
-        ;
-
-declaration_block
-        : __BLOCK_BEGIN declaration_list __BLOCK_END
-        | __BLOCK_BEGIN __BLOCK_END
-        ;
-
-declaration_unit
-        : __DECL_END
-        | selection
-        | function __DECL_END
+        : declaration_block
+        | selection_if
         | expression __DECL_END
         | assignment __DECL_END
-        | jump
+        | jump __DECL_END
+        | label __DECL_END
+
+        | __DECL_END {
+                struct Node* tmp = node_new(__DECL_END);
+                $$ = tmp;
+        }
 
         | error __DECL_END {
                 yyerrok;
         }
+        ;
 
-        | __EOF {
-                YYACCEPT;
+declaration_block
+        : __BLOCK_BEGIN declaration_list __BLOCK_END {
+                struct Node* tmp = node_new(__DECLARATION_BLOCK);
+                node_link(tmp, $2);
+                $$ = tmp;
+        }
+
+        | __BLOCK_BEGIN __BLOCK_END {
+                struct Node* tmp = node_new(__DECLARATION_BLOCK);
+                $$ = tmp;
         }
         ;
 
@@ -162,30 +201,30 @@ function
         ;
 
 func_print
-        : __FUNC_PRINT __LB expression __RB {
-                const double re = complex_realpart($3);
-                const double im = complex_imagpart($3);
-
-                if (im >= 0.0)
-                        printf("%f+%fi\n", re, im);
-                else
-                        printf("%f%fi\n", re, im);
+        : __FUNC_PRINT expression {
+                struct Node* tmp = node_new(__FUNC_PRINT);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_putpixel
-        : __FUNC_PUTPIXEL __LB
-          expression __CAMMA expression __CAMMA expression __CAMMA
-          expression __CAMMA expression __RB {
-                __func_putpixel(complex_realpart($3), complex_realpart($5),
-                                complex_realpart($7), complex_realpart($9),
-                                complex_realpart($11));
+        : __FUNC_PUTPIXEL expression expression expression expression expression {
+                struct Node* tmp = node_new(__FUNC_PUTPIXEL);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                node_link(tmp, $6);
+                $$ = tmp;
         }
         ;
 
 func_putchar
-        : __FUNC_PUTCHAR __LB expression __RB {
-                putchar(complex_realpart($3));
+        : __FUNC_PUTCHAR expression {
+                struct Node* tmp = node_new(__FUNC_PUTCHAR);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
@@ -231,268 +270,328 @@ func_blike
         ;
 
 func_bl_putc
-        : __FUNC_BL_PUTC __LB expression __RB {
-                bl_putc((int32_t)complex_realpart($3));
+        : __FUNC_BL_PUTC expression {
+                struct Node* tmp = node_new(__FUNC_BL_PUTC);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_puts1
-        : __FUNC_BL_PUTS1 __LB expression __RB {
+        : __FUNC_BL_PUTS1 expression {
                 /* undefined */
         }
         ;
 
 func_bl_printf
-        : __FUNC_BL_PRINTF __LB expression __RB {
+        : __FUNC_BL_PRINTF expression {
                 /* undefined */
         }
         ;
 
 func_bl_scanf
-        : __FUNC_BL_SCANF __LB expression __RB {
+        : __FUNC_BL_SCANF expression {
                 /* undefined */
         }
         ;
 
 func_bl_malloc
-        : __FUNC_BL_MALLOC __LB expression __RB {
+        : __FUNC_BL_MALLOC expression {
                 /* undefined */
         }
         ;
 
 func_bl_rand
-        : __FUNC_BL_RAND __LB  __RB {
-                bl_rand();
+        : __FUNC_BL_RAND {
+                struct Node* tmp = node_new(__FUNC_BL_RAND);
+                $$ = tmp;
         }
         ;
 
 func_bl_srand
-        : __FUNC_BL_SRAND __LB expression __RB {
-                bl_srand((int32_t)complex_realpart($3));
+        : __FUNC_BL_SRAND expression {
+                struct Node* tmp = node_new(__FUNC_BL_SRAND);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_gets
-        : __FUNC_BL_GETS __LB expression __RB {
+        : __FUNC_BL_GETS expression {
                 /* undefined */
         }
         ;
 
 func_bl_openWin
-        : __FUNC_BL_OPENWIN __LB expression __CAMMA expression __RB {
-                bl_openWin((int32_t)complex_realpart($3), (int32_t)complex_realpart($5));
+        : __FUNC_BL_OPENWIN expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_OPENWIN);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
 func_bl_setCol
-        : __FUNC_BL_SETCOL __LB expression __RB {
-                bl_setCol((int32_t)complex_realpart($3));
+        : __FUNC_BL_SETCOL expression {
+                struct Node* tmp = node_new(__FUNC_BL_SETCOL);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_setBCol
-        : __FUNC_BL_SETBCOL __LB expression __RB {
-                bl_setBCol((int32_t)complex_realpart($3));
+        : __FUNC_BL_SETBCOL expression {
+                struct Node* tmp = node_new(__FUNC_BL_SETBCOL);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_rgb
-        : __FUNC_BL_RGB __LB expression __CAMMA expression __CAMMA expression __RB {
-                const double re = bl_rgb((uint32_t)complex_realpart($3),
-                                         (uint32_t)complex_realpart($5),
-                                         (uint32_t)complex_realpart($7));
-
-                $$ = complex_constructor(re, 0);
+        : __FUNC_BL_RGB expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_RGB);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                $$ = tmp;
         }
         ;
 
 func_bl_iCol
-        : __FUNC_BL_ICOL __LB expression __RB {
-                const double re = bl_iCol((int32_t)complex_realpart($3));
-
-                $$ = complex_constructor(re, 0);
+        : __FUNC_BL_ICOL expression {
+                struct Node* tmp = node_new(__FUNC_BL_ICOL);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_flshWin
-        : __FUNC_BL_FLSHWIN __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-                bl_flshWin((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                           (int32_t)complex_realpart($7), (int32_t)complex_realpart($9));
+        : __FUNC_BL_FLSHWIN expression expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_FLSHWIN);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
 func_bl_getGrpB
-        : __FUNC_BL_GETGRPB __LB __RB {
+        : __FUNC_BL_GETGRPB {
                 /* undefined */
         }
         ;
 
 func_bl_setPix
-        : __FUNC_BL_SETPIX __LB expression __CAMMA expression __CAMMA expression __RB {
-                bl_setPix((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                          (int32_t)complex_realpart($7));
+        : __FUNC_BL_SETPIX expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_SETPIX);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                $$ = tmp;
         }
         ;
 
 func_bl_fillRect
-        : __FUNC_BL_FILLRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-                bl_fillRect((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7), (int32_t)complex_realpart($9));
+        : __FUNC_BL_FILLRECT expression expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_FILLRECT);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
 func_bl_drawRect
-        : __FUNC_BL_DRAWRECT __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-                bl_drawRect((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7), (int32_t)complex_realpart($9));
+        : __FUNC_BL_DRAWRECT expression expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_DRAWRECT);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
 func_bl_drawLine
-        : __FUNC_BL_DRAWLINE __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-                bl_drawLine((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7), (int32_t)complex_realpart($9));
+        : __FUNC_BL_DRAWLINE expression expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_DRAWLINE);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
 func_bl_rnd
-        : __FUNC_BL_RND __LB expression __RB {
-                const double re = bl_rnd((int32_t)complex_realpart($3));
-
-                $$ = complex_constructor(re, 0);
+        : __FUNC_BL_RND expression {
+                struct Node* tmp = node_new(__FUNC_BL_RND);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_wait
-        : __FUNC_BL_WAIT __LB expression __RB {
-                bl_wait((int32_t)complex_realpart($3));
+        : __FUNC_BL_WAIT expression {
+                struct Node* tmp = node_new(__FUNC_BL_WAIT);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_color
-        : __FUNC_BL_COLOR __LB expression __CAMMA expression __RB {
-                bl_color((int32_t)complex_realpart($3), (int32_t)complex_realpart($5));
+        : __FUNC_BL_COLOR expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_COLOR);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
 func_bl_locate
-        : __FUNC_BL_LOCATE __LB expression __CAMMA expression __RB {
-                bl_locate((int32_t)complex_realpart($3), (int32_t)complex_realpart($5));
+        : __FUNC_BL_LOCATE expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_LOCATE);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
 func_bl_getPix
-        : __FUNC_BL_GETPIX __LB expression __CAMMA expression __RB {
-                const double re = bl_getPix((int32_t)complex_realpart($3),
-                                            (int32_t)complex_realpart($5));
-
-                $$ = complex_constructor(re, 0);
+        : __FUNC_BL_GETPIX expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_GETPIX);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
 func_bl_waitNF
-        : __FUNC_BL_WAITNF __LB expression __RB {
-                bl_waitNF((int32_t)complex_realpart($3));
+        : __FUNC_BL_WAITNF expression {
+                struct Node* tmp = node_new(__FUNC_BL_WAITNF);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_inkey1
-        : __FUNC_BL_INKEY1 __LB __RB {
-                const double re = bl_inkey1();
-
-                $$ = complex_constructor(re, 0);
+        : __FUNC_BL_INKEY1 {
+                struct Node* tmp = node_new(__FUNC_BL_INKEY1);
+                $$ = tmp;
         }
         ;
 
 func_bl_cls
-        : __FUNC_BL_CLS __LB __RB {
-                bl_cls();
+        : __FUNC_BL_CLS {
+                struct Node* tmp = node_new(__FUNC_BL_CLS);
+                $$ = tmp;
         }
         ;
 
 func_bl_inptInt
-        : __FUNC_BL_INPTINT __LB expression __RB {
+        : __FUNC_BL_INPTINT expression {
                 /* undefined */
         }
         ;
 
 func_bl_inptFlot
-        : __FUNC_BL_INPTFLOT __LB expression __RB {
+        : __FUNC_BL_INPTFLOT expression {
                 /* undefined */
         }
         ;
 
 func_bl_setMode
-        : __FUNC_BL_SETMODE __LB expression __RB {
-                bl_setMode((int32_t)complex_realpart($3));
+        : __FUNC_BL_SETMODE expression {
+                struct Node* tmp = node_new(__FUNC_BL_SETMODE);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_fillOval
-        : __FUNC_BL_FILLOVAL __LB expression __CAMMA expression __CAMMA expression __CAMMA expression __RB {
-                bl_fillOval((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7), (int32_t)complex_realpart($9));
+        : __FUNC_BL_FILLOVAL expression expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_FILLOVAL);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
 func_bl_drawStr
-        : __FUNC_BL_DRAWSTR __LB expression __RB {
+        : __FUNC_BL_DRAWSTR expression {
                 /* undefined */
         }
         ;
 
 func_bl_openVWin
-        : __FUNC_BL_OPENVWIN __LB expression __CAMMA expression __CAMMA expression __RB {
-                bl_openVWin((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7));
+        : __FUNC_BL_OPENVWIN expression expression expression {
+                struct Node* tmp = node_new(__FUNC_BL_OPENVWIN);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                $$ = tmp;
         }
         ;
 
 func_bl_slctWin
-        : __FUNC_BL_SLCTWIN __LB expression __RB {
-                bl_slctWin((int32_t)complex_realpart($3));
+        : __FUNC_BL_SLCTWIN expression {
+                struct Node* tmp = node_new(__FUNC_BL_SLCTWIN);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 func_bl_copyRct0
-        : __FUNC_BL_COPYRCT0 __LB
-                expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-                expression __CAMMA expression __CAMMA expression __CAMMA expression __RB
+        : __FUNC_BL_COPYRCT0 expression expression expression expression
+                             expression expression expression expression
         {
-                bl_copyRct0((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7), (int32_t)complex_realpart($9),
-                            (int32_t)complex_realpart($11), (int32_t)complex_realpart($13),
-                            (int32_t)complex_realpart($15), (int32_t)complex_realpart($17));
+                struct Node* tmp = node_new(__FUNC_BL_COPYRCT0);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                node_link(tmp, $6);
+                node_link(tmp, $7);
+                node_link(tmp, $8);
+                node_link(tmp, $9);
+                $$ = tmp;
         }
         ;
 
 func_bl_copyRct1
-        : __FUNC_BL_COPYRCT1 __LB
-                expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-                expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-                expression __RB
+        : __FUNC_BL_COPYRCT1 expression expression expression expression
+                             expression expression expression expression
+                             expression
         {
-                bl_copyRct1((int32_t)complex_realpart($3), (int32_t)complex_realpart($5),
-                            (int32_t)complex_realpart($7), (int32_t)complex_realpart($9),
-                            (int32_t)complex_realpart($11), (int32_t)complex_realpart($13),
-                            (int32_t)complex_realpart($15), (int32_t)complex_realpart($17),
-                            (int32_t)complex_realpart($19));
+                struct Node* tmp = node_new(__FUNC_BL_COPYRCT1);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $4);
+                node_link(tmp, $5);
+                node_link(tmp, $6);
+                node_link(tmp, $7);
+                node_link(tmp, $8);
+                node_link(tmp, $9);
+                node_link(tmp, $10);
+                $$ = tmp;
         }
         ;
 
 func_bl_drawPtrn_d
-        : __FUNC_BL_DRAWPTRN_D __LB
-                expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-                expression __CAMMA expression __RB
+        : __FUNC_BL_DRAWPTRN_D expression expression expression expression
+                               expression expression
         {
                 /* undefined */
         }
         ;
 
 func_bl_drawPtrn_r
-        : __FUNC_BL_DRAWPTRN_R __LB
-                expression __CAMMA expression __CAMMA expression __CAMMA expression __CAMMA
-                expression __CAMMA expression __RB
+        : __FUNC_BL_DRAWPTRN_R expression expression expression expression
+                               expression expression
         {
                 /* undefined */
         }
@@ -500,122 +599,191 @@ func_bl_drawPtrn_r
 
 assignment
         : declarator __OPE_SUBST initializer {
-                struct Complex* tmp = (struct Complex*)($1->address);
-                tmp[$1->index] = $3;
-                $$ = $3;
+                struct Node* tmp = node_new(__ASSIGNMENT);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
 declarator
         : __IDENTIFIER {
-                $$ = mem_read_var_memtag($1, MTT_COMPVAL, 0);
+                char* iden_text = malloc(sizeof($1) + 1);
+                strcpy(iden_text, $1);
+
+                struct Node* tmp = node_new(__DECLARATOR);
+                node_link(tmp, (struct Node*)iden_text);
+                $$ = tmp;
         }
+
         | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                $$ = mem_read_var_memtag($1, MTT_COMPVAL, (size_t)complex_realpart($3));
+                char* iden_text = malloc(sizeof($1) + 1);
+                strcpy(iden_text, $1);
+
+                struct Node* tmp = node_new(__DECLARATOR);
+                node_link(tmp, (struct Node*)iden_text);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
 initializer
         : assignment
         | expression
-        | function
         ;
 
 expression
         : operation
         | read_variable
         | comparison
-        | exp_selection
+        | selection_exp
+        | function
         | lambda
         ;
 
 operation
         : __CONST_FLOAT {
-                $$ = complex_constructor($1, 0);
+                struct Complex* tmp = complex_new($1, 0);
+                $$ = node_new_leaf(__CONST_FLOAT, (void*)tmp);
         }
 
         | __OPE_REAL_PART expression {
-                $$ = complex_realpart_safe($2);
+                struct Node* tmp = node_new(__OPE_REAL_PART);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_IMAGINARY_PART expression {
-                $$ = complex_imagpart_safe($2);
+                struct Node* tmp = node_new(__OPE_IMAGINARY_PART);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_CONJUGATE expression {
-                $$ = complex_conjugate($2);
+                struct Node* tmp = node_new(__OPE_CONJUGATE);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ARGUMENT expression {
-                $$ = complex_constructor(complex_imagpart(complex_polar($2)), 0);
+                struct Node* tmp = node_new(__OPE_ARGUMENT);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ABSOLUTE expression __OPE_ABSOLUTE {
-                $$ = complex_abs($2);
+                struct Node* tmp = node_new(__OPE_ABSOLUTE);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | expression __OPE_COMPLEX expression {
-                $$ = complex_constructor(complex_realpart($1), complex_realpart($3));
+                struct Node* tmp = node_new(__OPE_COMPLEX);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_COMPLEX_POLAR expression {
-                $$ = complex_mk_polar(complex_constructor(complex_realpart($1), complex_realpart($3)));
+                struct Node* tmp = node_new(__OPE_COMPLEX_POLAR);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_ADD expression {
-                $$ = complex_add($1, $3);
+                struct Node* tmp = node_new(__OPE_ADD);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_SUB expression {
-                $$ = complex_sub($1, $3);
+                struct Node* tmp = node_new(__OPE_SUB);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_MUL expression {
-                $$ = complex_mul($1, $3);
+                struct Node* tmp = node_new(__OPE_MUL);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_DIV expression {
-                $$ = complex_div($1, $3);
+                struct Node* tmp = node_new(__OPE_DIV);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_POWER expression {
-                $$ = complex_pow($1, $3);
+                struct Node* tmp = node_new(__OPE_POWER);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_MOD expression {
-                $$ = complex_mod($1, $3);
+                struct Node* tmp = node_new(__OPE_MOD);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_LSHIFT expression {
-                $$ = complex_lshift($1, $3);
+                struct Node* tmp = node_new(__OPE_LSHIFT);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_RSHIFT expression {
-                $$ = complex_rshift($1, $3);
+                struct Node* tmp = node_new(__OPE_RSHIFT);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_OR expression {
-                $$ = complex_or($1, $3);
+                struct Node* tmp = node_new(__OPE_OR);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_AND expression {
-                $$ = complex_and($1, $3);
+                struct Node* tmp = node_new(__OPE_AND);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | expression __OPE_XOR expression {
-                $$ = complex_xor($1, $3);
+                struct Node* tmp = node_new(__OPE_XOR);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
 
         | __OPE_NOT expression {
-                $$ = complex_not($2);
+                struct Node* tmp = node_new(__OPE_NOT);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ADD expression %prec __OPE_PLUS {
-                $$ = $2;
+                struct Node* tmp = node_new(__OPE_PLUS);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_SUB expression %prec __OPE_MINUS {
-                $$ = complex_constructor(-complex_realpart($2), -complex_imagpart($2));
+                struct Node* tmp = node_new(__OPE_MINUS);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __LB expression __RB {
@@ -623,183 +791,151 @@ operation
         }
 
 lambda
-        : lambda_assignment_arg __COLON initializer {
-                $$ = $3;
+        : __LB __BACKSLASH __IDENTIFIER __COLON initializer __RB {
+                char* iden_text = malloc(sizeof($3) + 1);
+                strcpy(iden_text, $3);
 
-                mem_pop_overlide();
+                struct Node* iden = node_new(__IDENTIFIER);
+                node_link(iden, (struct Node*)iden_text);
 
-                const int64_t fpos = pc_pop();
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
-        }
-        ;
-
-lambda_assignment_arg
-        : lambda_head initializer {
-                struct Complex oldval = $2;
-
-                mem_push_overlide();
-
-                mem_create_var($1, MTT_COMPVAL, 0);
-                struct MemTag* memtag = mem_read_var_memtag($1, MTT_COMPVAL, 0);
-                struct Complex* newvalp = (struct Complex*)(memtag->address);
-                newvalp[memtag->index] = oldval;
-
-                const int64_t fpos = pc_pop();
-                pc_push(yycurbyte);     /* 引数の次の位置（lambda関数の終了後に飛ぶ位置）を保存 */
-#ifdef DEBUG
-printf("lambda_assignment_arg(), 引数の次の位置（lambda関数の終了後に飛ぶ位置）を保存 [%d] \n",  yycurbyte);
-#endif /* DEBUG */
-
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
-        }
-        ;
-
-lambda_head
-        : __LB __BACKSLASH __IDENTIFIER {
-                strncpy($$, $3, 0x7F);
-
-                pc_push(yynextbyte);
-#ifdef DEBUG
-printf("lambda_head(), (/x.の.位置（arg読み込み後に飛ぶ位置）を保存 [%d] \n",  yynextbyte);
-#endif /* DEBUG */
-                skip_lambda_body_block();
+                struct Node* tmp = node_new(__LAMBDA);
+                node_link(tmp, iden);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
 comparison
         : expression comparison_unit {
-                $$ = complex_and($2.f($1, $2.expval), $2.retval);
+                struct Node* tmp = node_new(__COMPARISON);
+                node_link(tmp, $1);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 comparison_unit
         : comparison_unit comparison_unit {
-                const struct Complex tmp = $2.f($1.expval, $2.expval);
-                $$.retval = complex_and(complex_and(tmp, $2.retval), $1.retval);
-                $$.f = $1.f;
-                $$.expval = $1.expval;
+                struct Node* tmp = node_new(__COMPARISON_UNIT_LIST);
+                node_link(tmp, $1);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_COMPARISON expression {
-                $$.f = complex_comparison;
-                $$.expval = $2;
-                $$.retval = complex_constructor(1, 0);
+                struct Node* tmp = node_new(__OPE_COMPARISON);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_NOT_COMPARISON expression {
-                $$.f = complex_not_comparison;
-                $$.expval = $2;
-                $$.retval = complex_constructor(1, 0);
+                struct Node* tmp = node_new(__OPE_NOT_COMPARISON);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ISSMALL expression {
-                $$.f = complex_is_small;
-                $$.expval = $2;
-                $$.retval = complex_constructor(1, 0);
+                struct Node* tmp = node_new(__OPE_ISSMALL);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ISSMALL_COMP expression {
-                $$.f = complex_is_small_comp;
-                $$.expval = $2;
-                $$.retval = complex_constructor(1, 0);
+                struct Node* tmp = node_new(__OPE_ISSMALL_COMP);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ISLARGE expression {
-                $$.f = complex_is_large;
-                $$.expval = $2;
-                $$.retval = complex_constructor(1, 0);
+                struct Node* tmp = node_new(__OPE_ISLARGE);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
 
         | __OPE_ISLARGE_COMP expression {
-                $$.f = complex_is_large_comp;
-                $$.expval = $2;
-                $$.retval = complex_constructor(1, 0);
+                struct Node* tmp = node_new(__OPE_ISLARGE_COMP);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
 read_variable
         : __IDENTIFIER {
-                $$ = mem_read_var_value($1, MTT_COMPVAL, 0);
+                char* iden_text = malloc(sizeof($1) + 1);
+                strcpy(iden_text, $1);
+
+                struct Node* tmp = node_new(__IDENTIFIER);
+                node_link(tmp, (struct Node*)iden_text);
+                $$ = tmp;
         }
 
         | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                $$ = mem_read_var_value($1, MTT_COMPVAL, (size_t)complex_realpart($3));
+                char* iden_text = malloc(sizeof($1) + 1);
+                strcpy(iden_text, $1);
+
+                struct Node* tmp = node_new(__IDENTIFIER);
+                node_link(tmp, (struct Node*)iden_text);
+                node_link(tmp, $3);
+                $$ = tmp;
         }
         ;
 
-if_conditional
-        : __STATE_IF expression {
-                const uint32_t re = (uint32_t)complex_realpart($2);
+selection_if
+        : __STATE_IF expression declaration_block {
+                struct Node* tmp = node_new(__SELECTION_IF);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                $$ = tmp;
+        }
 
-                if (re == 0)
-                        skip_declaration_block();
+        | __STATE_IF expression declaration_block __STATE_ELSE declaration_block {
+                struct Node* tmp = node_new(__SELECTION_IF);
+                node_link(tmp, $2);
+                node_link(tmp, $3);
+                node_link(tmp, $5);
+                $$ = tmp;
+        }
 
-                $$ = re;
+selection_exp
+        : expression __STATE_EXP_IF expression __STATE_EXP_ELSE expression {
+                struct Node* tmp = node_new(__SELECTION_EXP);
+                node_link(tmp, $1);
+                node_link(tmp, $3);
+                node_link(tmp, $5);
+                $$ = tmp;
         }
         ;
 
-selection
-        : if_conditional declaration_block
+label
+        : __OPE_LABEL __IDENTIFIER {
+                char* iden_text = malloc(sizeof($2) + 1);
+                strcpy(iden_text, $2);
 
-        | if_conditional declaration_block __STATE_ELSE {
-                if ($1 != 0)
-                        skip_declaration_block();
-        } declaration_block
-        ;
-
-exp_if_conditional
-        : expression __STATE_EXP_IF {
-                const uint32_t re = (uint32_t)complex_realpart($1);
-                $$ = re;
-        }
-        ;
-
-exp_selection
-        : exp_if_conditional expression __STATE_EXP_ELSE expression {
-                if ($1 != 0)
-                        $$ = $2;
-                else
-                        $$ = $4;
+                struct Node* tmp = node_new_leaf(__LABEL, iden_text);
+                $$ = tmp;
         }
         ;
 
 jump
-        : __OPE_GOTO __IDENTIFIER __DECL_END {
-                const int64_t fpos = jmptbl_seek_fpos($2);
-                if (fpos == -1) {
-                        printf("\n構文エラー : goto で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
-                        exit(1);
-                }
+        : __OPE_GOTO __IDENTIFIER {
+                char* iden_text = malloc(sizeof($2) + 1);
+                strcpy(iden_text, $2);
 
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
+                struct Node* tmp = node_new_leaf(__GOTO, iden_text);
+                $$ = tmp;
         }
 
-        | __OPE_GOSUB __IDENTIFIER __DECL_END {
-                const int64_t fpos = jmptbl_seek_fpos($2);
-                if (fpos == -1) {
-                        printf("\n構文エラー : gosub で、存在しないラベル %s をジャンプ先に指定しました\n\n", $2);
-                        exit(1);
-                }
+        | __OPE_GOSUB __IDENTIFIER {
+                char* iden_text = malloc(sizeof($2) + 1);
+                strcpy(iden_text, $2);
 
-                pc_push(yycurbyte);
-
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
+                struct Node* tmp = node_new_leaf(__GOSUB, iden_text);
+                $$ = tmp;
         }
 
-        | __OPE_RETURN __DECL_END {
-                const int64_t fpos = pc_pop();
-
-                jump_run(fpos);
-                yyclearin;
-                yycurbyte = yynextbyte = fpos;
+        | __OPE_RETURN {
+                struct Node* tmp = node_new(__RETURN);
+                $$ = tmp;
         }
         ;
 
