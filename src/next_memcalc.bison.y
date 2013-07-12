@@ -30,6 +30,8 @@
 #include "jmptbl.h"
 #include "pc.h"
 #include "node.h"
+#include "node_debug.h"
+#include "calcnode.h"
 
 #include "func_putpixel.h"
 
@@ -81,7 +83,7 @@ extern FILE* yyout;
 %token __IDENTIFIER
 %token __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
 %token __SELECTION_IF __SELECTION_EXP
-%token __DECLARATION __DECLARATION_LIST __DECLARATION_BLOCK __DECLARATION_UNIT
+%token __DECLARATION_LIST __DECLARATION_BLOCK
 %token __GOTO __GOSUB __RETURN __LABEL
 %token __LAMBDA
 
@@ -97,7 +99,7 @@ extern FILE* yyout;
 %left __OPE_REAL_PART __OPE_IMAGINARY_PART __OPE_ABSOLUTE __OPE_CONJUGATE __OPE_ARGUMENT __OPE_POWER
 
 %type <realval> __CONST_FLOAT
-%type <node> declaration declaration_block declaration_unit declaration_list
+%type <node> declaration declaration_block declaration_list
 %type <node> expression operation
 %type <node> function lambda
 %type <node> jump label
@@ -121,8 +123,12 @@ extern FILE* yyout;
 %%
 
 syntax_tree
-        : declaration_list {
+        : declaration_list __EOF {
+#ifdef DEBUG_NODE
+                node_print_tree($1);
+#endif /* DEBUG_NODE */
                 calcnode($1);
+                YYACCEPT;
         }
         ;
 
@@ -131,26 +137,47 @@ declaration_list
                 struct Node* n0 = node_child($1, 0);
                 if (n0->ope == __LABEL) {
                         char* iden_txt = (char*)node_child(n0, 0);
-                        printf("<declaration> __LABEL:[%s]\n", iden_text);
+                        printf("<declaration> __LABEL:[%s]\n", iden_txt);
 
                         jmptbl_add_node(iden_txt, n0);
                 }
+
+                $$ = $1;
         }
 
         | declaration declaration_list {
                 struct Node* n0 = node_child($1, 0);
                 if (n0->ope == __LABEL) {
                         char* iden_txt = (char*)node_child(n0, 0);
-                        printf("<declaration declaration_list> __LABEL:[%s]\n", iden_text);
+                        printf("<declaration declaration_list> __LABEL:[%s]\n", iden_txt);
 
                         jmptbl_add_node(iden_txt, $2);
                 }
+
+                struct Node* f0 = node_new(__DECLARATION_LIST);
+                node_link(f0, $1);
+                node_link(f0, $2);
+
+                $$ = f0;
         }
         ;
 
 declaration
-        : declaration_unit
-        | declaration_block
+        : declaration_block
+        | selection_if
+        | expression __DECL_END
+        | assignment __DECL_END
+        | jump __DECL_END
+        | label __DECL_END
+
+        | __DECL_END {
+                struct Node* tmp = node_new(__DECL_END);
+                $$ = tmp;
+        }
+
+        | error __DECL_END {
+                yyerrok;
+        }
         ;
 
 declaration_block
@@ -163,27 +190,6 @@ declaration_block
         | __BLOCK_BEGIN __BLOCK_END {
                 struct Node* tmp = node_new(__DECLARATION_BLOCK);
                 $$ = tmp;
-        }
-        ;
-
-declaration_unit
-        : __DECL_END {
-                struct Node* tmp = node_new(__DECL_END);
-                $$ = tmp;
-        }
-
-        | selection_if
-        | expression __DECL_END
-        | assignment __DECL_END
-        | jump __DECL_END
-        | label __DECL_END
-
-        | error __DECL_END {
-                yyerrok;
-        }
-
-        | __EOF {
-                YYACCEPT;
         }
         ;
 
@@ -638,7 +644,7 @@ expression
 operation
         : __CONST_FLOAT {
                 struct Complex* tmp = complex_new($1, 0);
-                $$ = node_new_leaf(__CONST_FLOAT, tmp);
+                $$ = node_new_leaf(__CONST_FLOAT, (void*)tmp);
         }
 
         | __OPE_REAL_PART expression {
@@ -903,7 +909,7 @@ selection_exp
 label
         : __OPE_LABEL __IDENTIFIER {
                 char* iden_text = malloc(sizeof($2) + 1);
-                strcpy(iden_text, $2)
+                strcpy(iden_text, $2);
 
                 struct Node* tmp = node_new_leaf(__LABEL, iden_text);
                 $$ = tmp;
