@@ -40,6 +40,7 @@
 void yyerror(const char *s)
 {
         printf("%s\n",s);
+        exit(1);
 }
 
 extern FILE* yyin;
@@ -49,7 +50,7 @@ extern FILE* yyout;
 
 %union {
         double realval;
-        char identifier[0x80];
+        char identifier_str[0x80];
         struct Node* node;
 }
 
@@ -81,7 +82,7 @@ extern FILE* yyout;
 
 %token __EXPRESSION_LIST
 %token __IDENTIFIER
-%token __DECLARATOR __ASSIGNMENT __COMPARISON __COMPARISON_UNIT_LIST
+%token __DECLARATOR __ASSIGNMENT __READ_VARIABLE __COMPARISON __COMPARISON_UNIT_LIST
 %token __SELECTION_IF __SELECTION_EXP
 %token __DECLARATION_LIST __DECLARATION_BLOCK
 %token __GOTO __GOSUB __RETURN __LABEL
@@ -101,6 +102,7 @@ extern FILE* yyout;
 %type <realval> __CONST_FLOAT
 %type <node> declaration declaration_block declaration_list
 %type <node> expression operation
+%type <node> identifier
 %type <node> function lambda
 %type <node> jump label
 %type <node> assignment declarator initializer read_variable
@@ -116,7 +118,7 @@ extern FILE* yyout;
 %type <node> func_bl_inptInt func_bl_inptFlot func_bl_setMode func_bl_fillOval func_bl_drawStr func_bl_openVWin
 %type <node> func_bl_slctWin func_bl_copyRct0 func_bl_copyRct1 func_bl_drawPtrn_d func_bl_drawPtrn_r
 
-%type <identifier> __IDENTIFIER
+%type <identifier_str> __IDENTIFIER
 
 %start syntax_tree
 
@@ -173,10 +175,6 @@ declaration
         | __DECL_END {
                 struct Node* tmp = node_new(__DECL_END);
                 $$ = tmp;
-        }
-
-        | error __DECL_END {
-                yyerrok;
         }
         ;
 
@@ -606,22 +604,26 @@ assignment
         }
         ;
 
-declarator
+identifier
         : __IDENTIFIER {
                 char* iden_text = malloc(sizeof($1) + 1);
                 strcpy(iden_text, $1);
 
+                struct Node* tmp = node_new_leaf(__IDENTIFIER, (struct Node*)iden_text);
+                $$ = tmp;
+        }
+        ;
+
+declarator
+        : identifier {
                 struct Node* tmp = node_new(__DECLARATOR);
-                node_link(tmp, (struct Node*)iden_text);
+                node_link(tmp, $1);
                 $$ = tmp;
         }
 
-        | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                char* iden_text = malloc(sizeof($1) + 1);
-                strcpy(iden_text, $1);
-
+        | identifier __ARRAY_BEGIN initializer __ARRAY_END {
                 struct Node* tmp = node_new(__DECLARATOR);
-                node_link(tmp, (struct Node*)iden_text);
+                node_link(tmp, $1);
                 node_link(tmp, $3);
                 $$ = tmp;
         }
@@ -791,15 +793,9 @@ operation
         }
 
 lambda
-        : __LB __BACKSLASH __IDENTIFIER __COLON initializer __RB {
-                char* iden_text = malloc(sizeof($3) + 1);
-                strcpy(iden_text, $3);
-
-                struct Node* iden = node_new(__IDENTIFIER);
-                node_link(iden, (struct Node*)iden_text);
-
+        : __LB __BACKSLASH identifier __COLON initializer __RB {
                 struct Node* tmp = node_new(__LAMBDA);
-                node_link(tmp, iden);
+                node_link(tmp, $3);
                 node_link(tmp, $5);
                 $$ = tmp;
         }
@@ -860,21 +856,15 @@ comparison_unit
         ;
 
 read_variable
-        : __IDENTIFIER {
-                char* iden_text = malloc(sizeof($1) + 1);
-                strcpy(iden_text, $1);
-
-                struct Node* tmp = node_new(__IDENTIFIER);
-                node_link(tmp, (struct Node*)iden_text);
+        : identifier {
+                struct Node* tmp = node_new(__READ_VARIABLE);
+                node_link(tmp, $1);
                 $$ = tmp;
         }
 
-        | __IDENTIFIER __ARRAY_BEGIN initializer __ARRAY_END {
-                char* iden_text = malloc(sizeof($1) + 1);
-                strcpy(iden_text, $1);
-
-                struct Node* tmp = node_new(__IDENTIFIER);
-                node_link(tmp, (struct Node*)iden_text);
+        | identifier __ARRAY_BEGIN initializer __ARRAY_END {
+                struct Node* tmp = node_new(__READ_VARIABLE);
+                node_link(tmp, $1);
                 node_link(tmp, $3);
                 $$ = tmp;
         }
@@ -907,29 +897,23 @@ selection_exp
         ;
 
 label
-        : __OPE_LABEL __IDENTIFIER {
-                char* iden_text = malloc(sizeof($2) + 1);
-                strcpy(iden_text, $2);
-
-                struct Node* tmp = node_new_leaf(__LABEL, iden_text);
+        : __OPE_LABEL identifier {
+                struct Node* tmp = node_new(__LABEL);
+                node_link(tmp, $2);
                 $$ = tmp;
         }
         ;
 
 jump
-        : __OPE_GOTO __IDENTIFIER {
-                char* iden_text = malloc(sizeof($2) + 1);
-                strcpy(iden_text, $2);
-
-                struct Node* tmp = node_new_leaf(__GOTO, iden_text);
+        : __OPE_GOTO identifier {
+                struct Node* tmp = node_new(__GOTO);
+                node_link(tmp, $2);
                 $$ = tmp;
         }
 
-        | __OPE_GOSUB __IDENTIFIER {
-                char* iden_text = malloc(sizeof($2) + 1);
-                strcpy(iden_text, $2);
-
-                struct Node* tmp = node_new_leaf(__GOSUB, iden_text);
+        | __OPE_GOSUB identifier {
+                struct Node* tmp = node_new(__GOSUB);
+                node_link(tmp, $2);
                 $$ = tmp;
         }
 

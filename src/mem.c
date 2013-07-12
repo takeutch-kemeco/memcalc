@@ -218,6 +218,8 @@ bool mem_create_var(const char* name,
         if (array_len == 0)
                 array_len = 1;
 
+        array_len += 1;
+
         size_t type_bytesize;
 
         switch (type) {

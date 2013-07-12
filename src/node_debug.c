@@ -109,6 +109,7 @@ static char* token_to_str(const uint64_t token)
         case __IDENTIFIER: return "__IDENTIFIER";
         case __DECLARATOR: return "__DECLARATOR";
         case __ASSIGNMENT: return "__ASSIGNMENT";
+        case __READ_VARIABLE: return "__READ_VARIABLE";
         case __COMPARISON: return "__COMPARISON";
         case __COMPARISON_UNIT_LIST: return "__COMPARISON_UNIT_LIST";
         case __SELECTION_IF: return "__SELECTION_IF";

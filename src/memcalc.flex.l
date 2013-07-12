@@ -261,7 +261,7 @@ static void update_line_yycurbyte(void)
 <main_process>"bl_drawPtrn_r"   update_return(__FUNC_BL_DRAWPTRN_R);
 
 <main_process>[_a-zA-Z][_0-9a-zA-Z]* {
-        strcpy(yylval.identifier, yytext);
+        strcpy(yylval.identifier_str, yytext);
         update_return(__IDENTIFIER);
 }
 
