@@ -11,6 +11,7 @@ memcalc_SOURCES = main.c                                        \
                   que.c que.h                                   \
                   array.c array.h                               \
                   node.c node.h                                 \
+                  node_debug.c node_debug.h                     \
                   calcnode.c calcnode.h                         \
                   calcnode_expression.c calcnode_expression.h   \
                   calcnode_function.c calcnode_function.h       \
