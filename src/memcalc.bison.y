@@ -793,11 +793,16 @@ operation
         }
 
 lambda
-        : __LB __BACKSLASH identifier __COLON initializer __RB {
+        : __LB __BACKSLASH declarator __COLON initializer __RB {
                 struct Node* tmp = node_new(__LAMBDA);
                 node_link(tmp, $3);
                 node_link(tmp, $5);
                 $$ = tmp;
+        }
+
+        | lambda expression {
+                node_link($1, $2);
+                $$ = $1;
         }
         ;
 

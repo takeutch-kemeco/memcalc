@@ -18,6 +18,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include "mem.h"
 #include "node.h"
 #include "complex.h"
@@ -306,6 +308,57 @@ static struct CalcNode calcnode__LABEL(struct Node* a)
         return cn_ret;
 }
 
+static struct CalcNode calcnode__LAMBDA_complete(struct Node* a)
+{
+        struct Node* tmp = node_new(__ASSIGNMENT);
+        node_link(tmp, node_child(a, 0));
+        node_link(tmp, node_child(a, 2));
+        calcnode(tmp);
+        /* node_delete(tmp); */
+
+        struct CalcNode cn_ret = calcnode(node_child(a, 1));
+        return cn_ret;
+}
+
+static struct CalcNode calcnode__LAMBDA_incomplete(struct Node* a)
+{
+        struct CalcNode cn0 = {
+                .type = CNT_FUNCPTR,
+                .ptr = (void*)a,
+        };
+
+        return cn0;
+}
+
+static struct CalcNode calcnode__LAMBDA(struct Node* a)
+{
+        struct CalcNode cn_ret;
+
+        mem_push_overlide();
+
+        switch (a->child_len) {
+        case 2:
+                cn_ret = calcnode__LAMBDA_incomplete(a);
+                break;
+
+        case 3:
+                cn_ret = calcnode__LAMBDA_complete(a);
+
+                if (cn_ret.type != CNT_COMPVAL)
+                        cn_ret = calcnode__LAMBDA_incomplete(a);
+
+                break;
+
+        default:
+                printf("calcnode.c, calcnode__LAMBDA(), a->child_len\n");
+                exit(1);
+        }
+
+        mem_pop_overlide();
+
+        return cn_ret;
+}
+
 struct CalcNode calcnode(struct Node* a)
 {
         switch (a->ope) {
@@ -318,6 +371,7 @@ struct CalcNode calcnode(struct Node* a)
         case __DECLARATION_LIST:        return calcnode__DECLARATION_LIST(a);
         case __DECLARATION_BLOCK:       return calcnode__DECLARATION_BLOCK(a);
         case __LABEL:                   return calcnode__LABEL(a);
+        case __LAMBDA:                  return calcnode__LAMBDA(a);
         }
 
         struct CalcNode cn;
