@@ -87,7 +87,7 @@ static struct CalcNode calcnode__READ_VARIABLE_array(struct Node* a)
 
         struct CalcNode cn1 = calcnode(node_child(a, 1));
         if (cn1.type != CNT_COMPVAL) {
-                printf("syntax err: 代入先の変数のインデックスが不正です\n");
+                printf("syntax err: 変数のインデックスが不正です\n");
                 exit(1);
         }
 
@@ -109,7 +109,7 @@ static struct CalcNode calcnode__READ_VARIABLE(struct Node* a)
                 printf("err: calcnode.c, calcnode__READ_VARIABLE_array()\n");
                 exit(1);
         } else {
-                printf("syntac err: 変数の配列の次元が高すぎます\n");
+                printf("syntac err: 配列の次元が不正です\n");
                 exit(1);
         }
 }
