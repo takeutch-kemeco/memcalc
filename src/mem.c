@@ -1,5 +1,5 @@
 /* mem.c
- * Copyright (C) 2012 Takeutch Kemeco
+ * Copyright (C) 2012, 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -245,37 +245,16 @@ bool mem_create_var(const char* name,
         return true;
 }
 
-struct MemTag* mem_read_var_memtag(const char* name,
-                                   const enum MemTagType type,
-                                   const size_t index)
+struct MemTag* mem_read_var_memtag(const char* name, const size_t index)
 {
         struct MemTag* p = get_ptr_var(name);
         if (p == NULL) {
-                if (mem_create_var(name, type, index) == false) {
-                        printf("err: mem_read_var_memtag(), get_ptr_var() or mem_create_var()\n");
-                        exit(1);
-                }
-
-                p = get_ptr_var(name);
+                printf("syntax err: 未定義の変数を読もうとしました\n");
+                exit(1);
         }
 
         p->index = index;
         return p;
-}
-
-struct Complex mem_read_var_value(const char* name,
-                                  const enum MemTagType type,
-                                  const size_t index)
-{
-        struct MemTag* p = mem_read_var_memtag(name, type, index);
-
-        if (p->type != MTT_COMPVAL) {
-                printf("err: mem_read_var_value(), p->type\n");
-                exit(1);
-        }
-
-        struct Complex* tmp = (struct Complex*)(p->address);
-        return tmp[p->index];
 }
 
 int mem_push_overlide(void)

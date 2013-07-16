@@ -45,13 +45,7 @@ bool mem_create_var(const char* name,
                     const enum MemTagType type,
                     size_t index_len);
 
-struct MemTag* mem_read_var_memtag(const char* name,
-                                   const enum MemTagType type,
-                                   const size_t index);
-
-struct Complex mem_read_var_value(const char* name,
-                                  const enum MemTagType type,
-                                  const size_t index);
+struct MemTag* mem_read_var_memtag(const char* name, const size_t index);
 
 int mem_push_overlide(void);
 int mem_pop_overlide(void);
