@@ -29,6 +29,7 @@
 #include "calcnode_comparison.h"
 #include "calcnode_read_variable.h"
 #include "calcnode_declarator.h"
+#include "calcnode_selection.h"
 #include "memcalc.bison.h"
 
 static struct CalcNode calcnode__IDENTIFIER(struct Node* a)
@@ -85,66 +86,6 @@ static struct CalcNode calcnode__ASSIGNMENT(struct Node* a)
         }
 
         return cn1;
-}
-
-static struct CalcNode calcnode__SELECTION_IF_then_else(struct Node* a)
-{
-        struct CalcNode cn0 = calcnode(node_child(a, 0));
-        if (cn0.type != CNT_COMPVAL) {
-                printf("syntax err: if 文の条件式が不正です\n");
-                exit(1);
-        }
-
-        if (complex_realpart(cn0.compval) != 0)
-                calcnode(node_child(a, 1));
-        else
-                calcnode(node_child(a, 2));
-
-        cn0.type = CNT_BOTTOM;
-        return cn0;
-}
-
-static struct CalcNode calcnode__SELECTION_IF_then_only(struct Node* a)
-{
-        struct CalcNode cn0 = calcnode(node_child(a, 0));
-        if (cn0.type != CNT_COMPVAL) {
-                printf("syntax err: if 文の条件式が不正です\n");
-                exit(1);
-        }
-
-        if (complex_realpart(cn0.compval) != 0)
-                calcnode(node_child(a, 1));
-
-        cn0.type = CNT_BOTTOM;
-        return cn0;
-}
-
-static struct CalcNode calcnode__SELECTION_IF(struct Node* a)
-{
-        switch (a->child_len) {
-        case 2:         return calcnode__SELECTION_IF_then_only(a);
-        case 3:         return calcnode__SELECTION_IF_then_else(a);
-        }
-
-        printf("syntax err: if 文の分岐先の数が不正です\n");
-        exit(1);
-}
-
-static struct CalcNode calcnode__SELECTION_EXP(struct Node* a)
-{
-        struct CalcNode cn0 = calcnode(node_child(a, 0));
-        if (cn0.type != CNT_COMPVAL) {
-                printf("syntax err: (条件式) -> a :: b の条件式が不正です\n");
-                exit(1);
-        }
-
-        struct CalcNode cnx;
-        if (complex_realpart(cn0.compval) != 0)
-                cnx = calcnode(node_child(a, 1));
-        else
-                cnx = calcnode(node_child(a, 2));
-
-        return cnx;
 }
 
 static struct CalcNode calcnode__DECLARATION_LIST(struct Node* a)
@@ -231,8 +172,6 @@ struct CalcNode calcnode(struct Node* a)
         switch (a->ope) {
         case __IDENTIFIER:              return calcnode__IDENTIFIER(a);
         case __ASSIGNMENT:              return calcnode__ASSIGNMENT(a);
-        case __SELECTION_IF:            return calcnode__SELECTION_IF(a);
-        case __SELECTION_EXP:           return calcnode__SELECTION_EXP(a);
         case __DECLARATION_LIST:        return calcnode__DECLARATION_LIST(a);
         case __DECLARATION_BLOCK:       return calcnode__DECLARATION_BLOCK(a);
         case __LABEL:                   return calcnode__LABEL(a);
@@ -247,6 +186,10 @@ struct CalcNode calcnode(struct Node* a)
                 return cn;
 
         cn = calcnode_declarator(a);
+        if (cn.type != CNT_NOT_FOUND)
+                return cn;
+
+        cn = calcnode_selection(a);
         if (cn.type != CNT_NOT_FOUND)
                 return cn;
 
