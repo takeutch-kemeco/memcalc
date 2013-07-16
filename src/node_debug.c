@@ -120,7 +120,8 @@ static char* token_to_str(const uint64_t token)
         case __GOSUB: return "__GOSUB";
         case __RETURN: return "__RETURN";
         case __LABEL: return "__LABEL";
-        case __LAMBDA: return "__LAMBDA";
+        case __LAMBDA_ABSTRACT: return "__LAMBDA_ABSTRACT";
+        case __FUNCTION_DESCRIPTION: return "__FUNCTION_DESCRIPTION";
         case __OPE_SUB: return "__OPE_SUB";
         case __OPE_ADD: return "__OPE_ADD";
         case __OPE_COMPLEX_POLAR: return "__OPE_COMPLEX_POLAR";

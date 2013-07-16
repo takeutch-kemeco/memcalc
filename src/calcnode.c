@@ -217,6 +217,7 @@ static struct CalcNode calcnode__ASSIGNMENT(struct Node* a)
                 exit(1);
         }
 
+printf("Assign:[%p]\n", (void*)(cn1.ptr));
         return cn1;
 }
 
@@ -310,53 +311,57 @@ static struct CalcNode calcnode__LABEL(struct Node* a)
         return cn_ret;
 }
 
-static struct CalcNode calcnode__LAMBDA_complete(struct Node* a)
+static struct CalcNode calcnode__LAMBDA_ABSTRACT(struct Node* a)
 {
-        struct Node* tmp = node_new(__ASSIGNMENT);
-        node_link(tmp, node_child(a, 0));
-        node_link(tmp, node_child(a, 2));
-        calcnode(tmp);
-        /* node_delete(tmp); */
-
-        struct CalcNode cn_ret = calcnode(node_child(a, 1));
-        return cn_ret;
-}
-
-static struct CalcNode calcnode__LAMBDA_incomplete(struct Node* a)
-{
-        struct CalcNode cn0 = {
+printf("A:[%p]\n", (void*)a);
+        struct CalcNode cn_ret = {
                 .type = CNT_FUNCPTR,
                 .ptr = (void*)a,
         };
 
-        return cn0;
+        return cn_ret;
 }
 
-static struct CalcNode calcnode__LAMBDA(struct Node* a)
+static struct CalcNode calcnode_calc_lambda(struct Node* f0, struct Node* n0)
 {
+printf("B:[%p, %p]\n", (void*)f0, (void*)n0);
+        if (f0->ope != __LAMBDA_ABSTRACT) {
+                printf("err: calcnode.c, calcnode_calc_lambda()\n");
+                exit(1);
+        }
+
+        struct Node* tmp = node_new(__ASSIGNMENT);
+        node_link(tmp, node_child(f0, 0));
+        node_link(tmp, n0);
+        calcnode(tmp);
+        /* node_delete_shallow(tmp); */
+
+        return calcnode(node_child(f0, 1));
+}
+
+static struct CalcNode calcnode__FUNCTION_DESCRIPTION(struct Node* a)
+{
+printf("C:[%p]\n", (void*)a);
+        struct Node* n0 = node_child(a, 0);
+        struct Node* n1 = node_child(a, 1);
+
+        struct CalcNode cn0 = calcnode(n0);
+
         struct CalcNode cn_ret;
+        switch (cn0.type) {
+        case CNT_FUNCPTR:
+                mem_push_overlide();
 
-        mem_push_overlide();
+                cn_ret = calcnode_calc_lambda((struct Node*)(cn0.ptr), n1);
 
-        switch (a->child_len) {
-        case 2:
-                cn_ret = calcnode__LAMBDA_incomplete(a);
-                break;
-
-        case 3:
-                cn_ret = calcnode__LAMBDA_complete(a);
-
-                if (cn_ret.type != CNT_COMPVAL)
-                        cn_ret = calcnode__LAMBDA_incomplete(a);
+                /* mem_pop_overlide(); */
 
                 break;
 
         default:
-                printf("calcnode.c, calcnode__LAMBDA(), a->child_len\n");
+                printf("syntax err: 関数以外へ引数を渡そうとしています\n");
                 exit(1);
         }
-
-        mem_pop_overlide();
 
         return cn_ret;
 }
@@ -373,7 +378,8 @@ struct CalcNode calcnode(struct Node* a)
         case __DECLARATION_LIST:        return calcnode__DECLARATION_LIST(a);
         case __DECLARATION_BLOCK:       return calcnode__DECLARATION_BLOCK(a);
         case __LABEL:                   return calcnode__LABEL(a);
-        case __LAMBDA:                  return calcnode__LAMBDA(a);
+        case __LAMBDA_ABSTRACT:         return calcnode__LAMBDA_ABSTRACT(a);
+        case __FUNCTION_DESCRIPTION:    return calcnode__FUNCTION_DESCRIPTION(a);
         }
 
         struct CalcNode cn;

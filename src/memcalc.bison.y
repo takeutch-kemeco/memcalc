@@ -86,7 +86,7 @@ extern FILE* yyout;
 %token __SELECTION_IF __SELECTION_EXP
 %token __DECLARATION_LIST __DECLARATION_BLOCK
 %token __GOTO __GOSUB __RETURN __LABEL
-%token __LAMBDA
+%token __LAMBDA_ABSTRACT __FUNCTION_DESCRIPTION
 
 %left __OPE_SUBST
 %left __OPE_COMPARISON __OPE_NOT_COMPARISON __OPE_ISSMALL __OPE_ISSMALL_COMP __OPE_ISLARGE __OPE_ISLARGE_COMP
@@ -103,7 +103,7 @@ extern FILE* yyout;
 %type <node> declaration declaration_block declaration_list
 %type <node> expression operation
 %type <node> identifier
-%type <node> function lambda
+%type <node> function lambda_abstract function_description
 %type <node> jump label
 %type <node> assignment declarator initializer read_variable
 %type <node> comparison comparison_unit selection_if selection_exp
@@ -640,7 +640,8 @@ expression
         | comparison
         | selection_exp
         | function
-        | lambda
+        | lambda_abstract
+        | function_description
         ;
 
 operation
@@ -791,18 +792,23 @@ operation
         | __LB expression __RB {
                 $$ = $2;
         }
+        ;
 
-lambda
+lambda_abstract
         : __LB __BACKSLASH declarator __COLON initializer __RB {
-                struct Node* tmp = node_new(__LAMBDA);
+                struct Node* tmp = node_new(__LAMBDA_ABSTRACT);
                 node_link(tmp, $3);
                 node_link(tmp, $5);
                 $$ = tmp;
         }
+        ;
 
-        | lambda expression {
-                node_link($1, $2);
-                $$ = $1;
+function_description
+        : expression expression {
+                struct Node* tmp = node_new(__FUNCTION_DESCRIPTION);
+                node_link(tmp, $1);
+                node_link(tmp, $2);
+                $$ = tmp;
         }
         ;
 
