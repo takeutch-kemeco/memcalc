@@ -64,7 +64,7 @@ void f(void)
 {
         const char* m0name = "aiueo";
         mem_create_var(m0name, MTT_COMPVAL, 100);
-        struct MemTag* m0 = mem_read_var_memtag(m0name, MTT_COMPVAL, 0);
+        struct MemTag* m0 = mem_read_var_memtag(m0name, 0);
         m0->address = (void*)complex_new(123, 456);
         printf("f(), &m0:[%p] ", m0);
         struct Complex* cn0vp = (struct Complex*)m0->address;
@@ -72,7 +72,7 @@ void f(void)
 
         const char* m1name = "kakikukeko";
         mem_create_var(m1name, MTT_COMPVAL, 100);
-        struct MemTag* m1 = mem_read_var_memtag(m1name, MTT_COMPVAL, 0);
+        struct MemTag* m1 = mem_read_var_memtag(m1name, 0);
         m1->address = (void*)complex_new(1234, 5678);
         printf("f(), &m1:[%p] ", m1);
         struct Complex* cn1vp = (struct Complex*)m1->address;
