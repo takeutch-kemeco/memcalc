@@ -1,4 +1,4 @@
-/* calcnode_expression.h
+/* calcnode_operation.h
  * Copyright (C) 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
@@ -19,9 +19,9 @@
 #include "node.h"
 #include "calcnode.h"
 
-#ifndef __CALCNODE_EXPRESSION_H__
-#define __CALCNODE_EXPRESSION_H__
+#ifndef __CALCNODE_OPERATION_H__
+#define __CALCNODE_OPERATION_H__
 
-struct CalcNode calcnode_expression(struct Node* a);
+struct CalcNode calcnode_operation(struct Node* a);
 
-#endif /* __CALCNODE_EXPRESSION_H__ */
+#endif /* __CALCNODE_OPERATION_H__ */

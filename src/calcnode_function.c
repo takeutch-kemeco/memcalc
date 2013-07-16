@@ -22,7 +22,6 @@
 #include "complex.h"
 #include "node.h"
 #include "calcnode.h"
-#include "calcnode_expression.h"
 #include "calcnode_function.h"
 #include "calcnode_bl_function.h"
 #include "func_putpixel.h"

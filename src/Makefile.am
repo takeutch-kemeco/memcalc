@@ -13,7 +13,7 @@ memcalc_SOURCES = main.c                                        \
                   node.c node.h                                 \
                   node_debug.c node_debug.h                     \
                   calcnode.c calcnode.h                         \
-                  calcnode_expression.c calcnode_expression.h   \
+                  calcnode_operation.c calcnode_operation.h   \
                   calcnode_function.c calcnode_function.h       \
                   calcnode_bl_function.c calcnode_bl_function.h \
                   calcnode_comparison.c calcnode_comparison.h   \

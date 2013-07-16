@@ -1,4 +1,4 @@
-/* calcnode.c
+/* calcnode_operation.c
  * Copyright (C) 2013 Takeutch Kemeco
  *
  * This program is free software; you can redistribute it and/or
@@ -22,10 +22,9 @@
 #include "complex.h"
 #include "node.h"
 #include "calcnode.h"
-#include "calcnode.h"
 #include "memcalc.bison.h"
 
-static struct CalcNode expression__CONST_FLOAT(struct Node* a)
+static struct CalcNode operation__CONST_FLOAT(struct Node* a)
 {
         struct Complex* tmp = (struct Complex*)node_child(a, 0);
         struct CalcNode cn0 = {.type = CNT_COMPVAL, .compval = *tmp};
@@ -33,7 +32,7 @@ static struct CalcNode expression__CONST_FLOAT(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_REAL_PART(struct Node* a)
+static struct CalcNode operation__OPE_REAL_PART(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -42,7 +41,7 @@ static struct CalcNode expression__OPE_REAL_PART(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_IMAGINARY_PART(struct Node* a)
+static struct CalcNode operation__OPE_IMAGINARY_PART(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -51,7 +50,7 @@ static struct CalcNode expression__OPE_IMAGINARY_PART(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_CONJUGATE(struct Node* a)
+static struct CalcNode operation__OPE_CONJUGATE(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -60,7 +59,7 @@ static struct CalcNode expression__OPE_CONJUGATE(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_ARGUMENT(struct Node* a)
+static struct CalcNode operation__OPE_ARGUMENT(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -69,7 +68,7 @@ static struct CalcNode expression__OPE_ARGUMENT(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_ABSOLUTE(struct Node* a)
+static struct CalcNode operation__OPE_ABSOLUTE(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -78,7 +77,7 @@ static struct CalcNode expression__OPE_ABSOLUTE(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_COMPLEX(struct Node* a)
+static struct CalcNode operation__OPE_COMPLEX(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -88,7 +87,7 @@ static struct CalcNode expression__OPE_COMPLEX(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_COMPLEX_POLAR(struct Node* a)
+static struct CalcNode operation__OPE_COMPLEX_POLAR(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -98,7 +97,7 @@ static struct CalcNode expression__OPE_COMPLEX_POLAR(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_ADD(struct Node* a)
+static struct CalcNode operation__OPE_ADD(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -108,7 +107,7 @@ static struct CalcNode expression__OPE_ADD(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_SUB(struct Node* a)
+static struct CalcNode operation__OPE_SUB(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -118,7 +117,7 @@ static struct CalcNode expression__OPE_SUB(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_MUL(struct Node* a)
+static struct CalcNode operation__OPE_MUL(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -128,7 +127,7 @@ static struct CalcNode expression__OPE_MUL(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_DIV(struct Node* a)
+static struct CalcNode operation__OPE_DIV(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -138,7 +137,7 @@ static struct CalcNode expression__OPE_DIV(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_POWER(struct Node* a)
+static struct CalcNode operation__OPE_POWER(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -148,7 +147,7 @@ static struct CalcNode expression__OPE_POWER(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_MOD(struct Node* a)
+static struct CalcNode operation__OPE_MOD(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -158,7 +157,7 @@ static struct CalcNode expression__OPE_MOD(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_LSHIFT(struct Node* a)
+static struct CalcNode operation__OPE_LSHIFT(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -168,7 +167,7 @@ static struct CalcNode expression__OPE_LSHIFT(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_RSHIFT(struct Node* a)
+static struct CalcNode operation__OPE_RSHIFT(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -178,7 +177,7 @@ static struct CalcNode expression__OPE_RSHIFT(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_OR(struct Node* a)
+static struct CalcNode operation__OPE_OR(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -188,7 +187,7 @@ static struct CalcNode expression__OPE_OR(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_AND(struct Node* a)
+static struct CalcNode operation__OPE_AND(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -198,7 +197,7 @@ static struct CalcNode expression__OPE_AND(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_XOR(struct Node* a)
+static struct CalcNode operation__OPE_XOR(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
         struct CalcNode cn1 = calcnode(node_child(a, 1));
@@ -208,7 +207,7 @@ static struct CalcNode expression__OPE_XOR(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_NOT(struct Node* a)
+static struct CalcNode operation__OPE_NOT(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -217,14 +216,14 @@ static struct CalcNode expression__OPE_NOT(struct Node* a)
         return cn0;
 }
 
-static struct CalcNode expression__OPE_PLUS(struct Node* a)
+static struct CalcNode operation__OPE_PLUS(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
         return cn0;
 }
 
-static struct CalcNode expression__OPE_MINUS(struct Node* a)
+static struct CalcNode operation__OPE_MINUS(struct Node* a)
 {
         struct CalcNode cn0 = calcnode(node_child(a, 0));
 
@@ -233,31 +232,31 @@ static struct CalcNode expression__OPE_MINUS(struct Node* a)
         return cn0;
 }
 
-struct CalcNode calcnode_expression(struct Node* a)
+struct CalcNode calcnode_operation(struct Node* a)
 {
         switch (a->ope) {
-        case __CONST_FLOAT:             return expression__CONST_FLOAT(a);
-        case __OPE_REAL_PART:           return expression__OPE_REAL_PART(a);
-        case __OPE_IMAGINARY_PART:      return expression__OPE_IMAGINARY_PART(a);
-        case __OPE_CONJUGATE:           return expression__OPE_CONJUGATE(a);
-        case __OPE_ARGUMENT:            return expression__OPE_ARGUMENT(a);
-        case __OPE_ABSOLUTE:            return expression__OPE_ABSOLUTE(a);
-        case __OPE_COMPLEX:             return expression__OPE_COMPLEX(a);
-        case __OPE_COMPLEX_POLAR:       return expression__OPE_COMPLEX_POLAR(a);
-        case __OPE_ADD:                 return expression__OPE_ADD(a);
-        case __OPE_SUB:                 return expression__OPE_SUB(a);
-        case __OPE_MUL:                 return expression__OPE_MUL(a);
-        case __OPE_DIV:                 return expression__OPE_DIV(a);
-        case __OPE_POWER:               return expression__OPE_POWER(a);
-        case __OPE_MOD:                 return expression__OPE_MOD(a);
-        case __OPE_LSHIFT:              return expression__OPE_LSHIFT(a);
-        case __OPE_RSHIFT:              return expression__OPE_RSHIFT(a);
-        case __OPE_OR:                  return expression__OPE_OR(a);
-        case __OPE_AND:                 return expression__OPE_AND(a);
-        case __OPE_XOR:                 return expression__OPE_XOR(a);
-        case __OPE_NOT:                 return expression__OPE_NOT(a);
-        case __OPE_PLUS:                return expression__OPE_PLUS(a);
-        case __OPE_MINUS:               return expression__OPE_MINUS(a);
+        case __CONST_FLOAT:             return operation__CONST_FLOAT(a);
+        case __OPE_REAL_PART:           return operation__OPE_REAL_PART(a);
+        case __OPE_IMAGINARY_PART:      return operation__OPE_IMAGINARY_PART(a);
+        case __OPE_CONJUGATE:           return operation__OPE_CONJUGATE(a);
+        case __OPE_ARGUMENT:            return operation__OPE_ARGUMENT(a);
+        case __OPE_ABSOLUTE:            return operation__OPE_ABSOLUTE(a);
+        case __OPE_COMPLEX:             return operation__OPE_COMPLEX(a);
+        case __OPE_COMPLEX_POLAR:       return operation__OPE_COMPLEX_POLAR(a);
+        case __OPE_ADD:                 return operation__OPE_ADD(a);
+        case __OPE_SUB:                 return operation__OPE_SUB(a);
+        case __OPE_MUL:                 return operation__OPE_MUL(a);
+        case __OPE_DIV:                 return operation__OPE_DIV(a);
+        case __OPE_POWER:               return operation__OPE_POWER(a);
+        case __OPE_MOD:                 return operation__OPE_MOD(a);
+        case __OPE_LSHIFT:              return operation__OPE_LSHIFT(a);
+        case __OPE_RSHIFT:              return operation__OPE_RSHIFT(a);
+        case __OPE_OR:                  return operation__OPE_OR(a);
+        case __OPE_AND:                 return operation__OPE_AND(a);
+        case __OPE_XOR:                 return operation__OPE_XOR(a);
+        case __OPE_NOT:                 return operation__OPE_NOT(a);
+        case __OPE_PLUS:                return operation__OPE_PLUS(a);
+        case __OPE_MINUS:               return operation__OPE_MINUS(a);
         }
 
         struct CalcNode cn = {.type = CNT_NOT_FOUND};

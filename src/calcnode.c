@@ -24,7 +24,7 @@
 #include "node.h"
 #include "complex.h"
 #include "calcnode.h"
-#include "calcnode_expression.h"
+#include "calcnode_operation.h"
 #include "calcnode_function.h"
 #include "calcnode_comparison.h"
 #include "calcnode_read_variable.h"
@@ -147,7 +147,7 @@ struct CalcNode calcnode(struct Node* a)
         if (cn.type != CNT_NOT_FOUND)
                 return cn;
 
-        cn = calcnode_expression(a);
+        cn = calcnode_operation(a);
         if (cn.type != CNT_NOT_FOUND)
                 return cn;
 
