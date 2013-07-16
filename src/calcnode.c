@@ -50,12 +50,12 @@ static struct CalcNode calcnode__READ_VARIABLE_work(struct MemTag* mt, const siz
 
         case MTT_VARPTR:
                 cn0.type = CNT_VARPTR;
-                cn0.ptr = ((void*)mt->address) + index;
+                cn0.ptr = *(((void**)(mt->address)) + index);
                 break;
 
         case MTT_FUNCPTR:
                 cn0.type = CNT_FUNCPTR;
-                cn0.ptr = ((void*)mt->address) + index;
+                cn0.ptr = *(((void**)(mt->address)) + index);
                 break;
         }
 
@@ -217,7 +217,6 @@ static struct CalcNode calcnode__ASSIGNMENT(struct Node* a)
                 exit(1);
         }
 
-printf("Assign:[%p]\n", (void*)(cn1.ptr));
         return cn1;
 }
 
@@ -313,7 +312,6 @@ static struct CalcNode calcnode__LABEL(struct Node* a)
 
 static struct CalcNode calcnode__LAMBDA_ABSTRACT(struct Node* a)
 {
-printf("A:[%p]\n", (void*)a);
         struct CalcNode cn_ret = {
                 .type = CNT_FUNCPTR,
                 .ptr = (void*)a,
@@ -324,7 +322,6 @@ printf("A:[%p]\n", (void*)a);
 
 static struct CalcNode calcnode_calc_lambda(struct Node* f0, struct Node* n0)
 {
-printf("B:[%p, %p]\n", (void*)f0, (void*)n0);
         if (f0->ope != __LAMBDA_ABSTRACT) {
                 printf("err: calcnode.c, calcnode_calc_lambda()\n");
                 exit(1);
@@ -341,24 +338,20 @@ printf("B:[%p, %p]\n", (void*)f0, (void*)n0);
 
 static struct CalcNode calcnode__FUNCTION_DESCRIPTION(struct Node* a)
 {
-printf("C:[%p]\n", (void*)a);
         struct Node* n0 = node_child(a, 0);
         struct Node* n1 = node_child(a, 1);
 
-        struct CalcNode cn0 = calcnode(n0);
-
         struct CalcNode cn_ret;
-        switch (cn0.type) {
-        case CNT_FUNCPTR:
+
+        struct CalcNode cn0 = calcnode(n0);
+        if (cn0.type == CNT_FUNCPTR) {
                 mem_push_overlide();
 
-                cn_ret = calcnode_calc_lambda((struct Node*)(cn0.ptr), n1);
+                struct Node* f0 = (struct Node*)(cn0.ptr);
+                cn_ret = calcnode_calc_lambda(f0, n1);
 
-                /* mem_pop_overlide(); */
-
-                break;
-
-        default:
+                mem_pop_overlide();
+        } else {
                 printf("syntax err: 関数以外へ引数を渡そうとしています\n");
                 exit(1);
         }
