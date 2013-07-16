@@ -30,6 +30,7 @@
 #include "calcnode_read_variable.h"
 #include "calcnode_declarator.h"
 #include "calcnode_selection.h"
+#include "calcnode_lambda.h"
 #include "memcalc.bison.h"
 
 static struct CalcNode calcnode__IDENTIFIER(struct Node* a)
@@ -118,55 +119,6 @@ static struct CalcNode calcnode__LABEL(struct Node* a)
         return cn_ret;
 }
 
-static struct CalcNode calcnode__LAMBDA_ABSTRACT(struct Node* a)
-{
-        struct CalcNode cn_ret = {
-                .type = CNT_FUNCPTR,
-                .ptr = (void*)a,
-        };
-
-        return cn_ret;
-}
-
-static struct CalcNode calcnode_calc_lambda(struct Node* f0, struct Node* n0)
-{
-        if (f0->ope != __LAMBDA_ABSTRACT) {
-                printf("err: calcnode.c, calcnode_calc_lambda()\n");
-                exit(1);
-        }
-
-        struct Node* tmp = node_new(__ASSIGNMENT);
-        node_link(tmp, node_child(f0, 0));
-        node_link(tmp, n0);
-        calcnode(tmp);
-        /* node_delete_shallow(tmp); */
-
-        return calcnode(node_child(f0, 1));
-}
-
-static struct CalcNode calcnode__FUNCTION_DESCRIPTION(struct Node* a)
-{
-        struct Node* n0 = node_child(a, 0);
-        struct Node* n1 = node_child(a, 1);
-
-        struct CalcNode cn_ret;
-
-        struct CalcNode cn0 = calcnode(n0);
-        if (cn0.type == CNT_FUNCPTR) {
-                mem_push_overlide();
-
-                struct Node* f0 = (struct Node*)(cn0.ptr);
-                cn_ret = calcnode_calc_lambda(f0, n1);
-
-                mem_pop_overlide();
-        } else {
-                printf("syntax err: 関数以外へ引数を渡そうとしています\n");
-                exit(1);
-        }
-
-        return cn_ret;
-}
-
 struct CalcNode calcnode(struct Node* a)
 {
         switch (a->ope) {
@@ -175,8 +127,6 @@ struct CalcNode calcnode(struct Node* a)
         case __DECLARATION_LIST:        return calcnode__DECLARATION_LIST(a);
         case __DECLARATION_BLOCK:       return calcnode__DECLARATION_BLOCK(a);
         case __LABEL:                   return calcnode__LABEL(a);
-        case __LAMBDA_ABSTRACT:         return calcnode__LAMBDA_ABSTRACT(a);
-        case __FUNCTION_DESCRIPTION:    return calcnode__FUNCTION_DESCRIPTION(a);
         }
 
         struct CalcNode cn;
@@ -190,6 +140,10 @@ struct CalcNode calcnode(struct Node* a)
                 return cn;
 
         cn = calcnode_selection(a);
+        if (cn.type != CNT_NOT_FOUND)
+                return cn;
+
+        cn = calcnode_lambda(a);
         if (cn.type != CNT_NOT_FOUND)
                 return cn;
 

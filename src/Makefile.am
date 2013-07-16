@@ -19,7 +19,8 @@ memcalc_SOURCES = main.c                                        \
                   calcnode_comparison.c calcnode_comparison.h   \
                   calcnode_read_variable.c calcnode_read_variable.h \
                   calcnode_declarator.c calcnode_declarator.h   \
-                  calcnode_selection.c calcnode_selection.h
+                  calcnode_selection.c calcnode_selection.h     \
+                  calcnode_lambda.c calcnode_lambda.h
 
 LFLAGS = -Cf -8
 YFLAGS = -dv
