@@ -24,14 +24,6 @@ struct Complex {
         double im;
 };
 
-typedef struct Complex (*ComplexComparisonFunc)(const struct Complex a, const struct Complex b);
-
-struct Comparison {
-        struct Complex retval;
-        struct Complex expval;
-        ComplexComparisonFunc f;
-};
-
 struct Complex* complex_new(const double re, const double im);
 int complex_free(struct Complex* a);
 
