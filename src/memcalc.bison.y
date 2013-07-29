@@ -804,13 +804,19 @@ lambda_abstract
         ;
 
 function_description
-        : read_variable expression {
+        : lambda_abstract expression {
                 struct Node* tmp = node_new(__FUNCTION_DESCRIPTION);
                 node_link(tmp, $1);
                 node_link(tmp, $2);
                 $$ = tmp;
         }
-        ;
+
+        | read_variable expression {
+                struct Node* tmp = node_new(__FUNCTION_DESCRIPTION);
+                node_link(tmp, $1);
+                node_link(tmp, $2);
+                $$ = tmp;
+        }
 
         | function_description expression {
                 struct Node* tmp = node_new(__FUNCTION_DESCRIPTION);
