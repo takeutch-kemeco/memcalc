@@ -65,7 +65,7 @@ static struct CalcNode calcnode__FUNCTION_DESCRIPTION(struct Node* a)
                 struct Node* f0 = (struct Node*)(cn0.ptr);
                 cn_ret = calcnode_calc_lambda(f0, n1);
 
-//                mem_pop_overlide();
+                mem_pop_overlide();
         } else {
                 printf("syntax err: 関数以外へ引数を渡そうとしています\n");
                 exit(1);
