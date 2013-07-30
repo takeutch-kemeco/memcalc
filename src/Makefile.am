@@ -1,6 +1,6 @@
 bin_PROGRAMS = memcalc
 memcalc_SOURCES = main.c                                        \
-                  memcalc.flex.l memcalc.bison.y                \
+                  memcalc.bison.y memcalc.flex.l                \
                   mem.c mem.h                                   \
                   jmptbl.c jmptbl.h                             \
                   func_putpixel.c func_putpixel.h               \
